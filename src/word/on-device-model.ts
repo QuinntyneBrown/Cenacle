@@ -4,7 +4,7 @@ export enum AiCapability {
   Unsupported = "unsupported",
   Downloadable = "downloadable",
   Downloading = "downloading",
-  Ready = "ready"
+  Ready = "ready",
 }
 
 export class CapabilityStore {
@@ -21,24 +21,31 @@ export class CapabilityStore {
     return () => this.listeners.delete(listener);
   }
 
-  isReady(): boolean { return this.current === AiCapability.Ready; }
+  isReady(): boolean {
+    return this.current === AiCapability.Ready;
+  }
 }
 
 export class OnDeviceModel {
   async availability(): Promise<AiCapability> {
     if (window.LanguageModel?.availability) {
       const state = await window.LanguageModel.availability();
-      return {
-        available: AiCapability.Ready,
-        downloadable: AiCapability.Downloadable,
-        downloading: AiCapability.Downloading,
-        unavailable: AiCapability.Unsupported
-      }[state];
+      return (
+        (
+          {
+            available: AiCapability.Ready,
+            downloadable: AiCapability.Downloadable,
+            downloading: AiCapability.Downloading,
+            unavailable: AiCapability.Unsupported,
+          } as const
+        )[state] ?? AiCapability.Unsupported
+      );
     }
     if (window.ai?.languageModel?.capabilities) {
       const capability = await window.ai.languageModel.capabilities();
       if (capability.available === "readily") return AiCapability.Ready;
-      if (capability.available === "after-download") return AiCapability.Downloadable;
+      if (capability.available === "after-download")
+        return AiCapability.Downloadable;
     }
     return AiCapability.Unsupported;
   }
@@ -48,8 +55,12 @@ export class OnDeviceModel {
       ? { initialPrompts: [{ role: "system" as const, content: systemPrompt }] }
       : undefined;
     if (window.LanguageModel) return window.LanguageModel.create(options);
-    if (window.ai?.languageModel) return window.ai.languageModel.create(options);
-    throw new DOMException("The on-device model is unavailable.", "NotSupportedError");
+    if (window.ai?.languageModel)
+      return window.ai.languageModel.create(options);
+    throw new DOMException(
+      "The on-device model is unavailable.",
+      "NotSupportedError",
+    );
   }
 
   async prompt(input: string, systemPrompt?: string): Promise<string> {
@@ -61,38 +72,53 @@ export class OnDeviceModel {
     }
   }
 
-  async download(onProgress: (progress: DownloadProgress) => void): Promise<void> {
-    if (!window.LanguageModel) throw new DOMException("Model download is unavailable.", "NotSupportedError");
+  async download(
+    onProgress: (progress: DownloadProgress) => void,
+  ): Promise<void> {
+    if (!window.LanguageModel)
+      throw new DOMException(
+        "Model download is unavailable.",
+        "NotSupportedError",
+      );
     const total = 1_900_000_000;
     const started = performance.now();
     const session = await window.LanguageModel.create({
       monitor(monitor) {
         monitor.addEventListener("downloadprogress", (event) => {
-          const loaded = Math.min(1, Number((event as Event & { loaded?: number }).loaded ?? 0));
+          const loaded = Math.min(
+            1,
+            Number((event as Event & { loaded?: number }).loaded ?? 0),
+          );
           const elapsed = Math.max(1, (performance.now() - started) / 1000);
-          const remaining = loaded > 0 ? elapsed * (1 - loaded) / loaded : 0;
+          const remaining = loaded > 0 ? (elapsed * (1 - loaded)) / loaded : 0;
           onProgress({
             bytesTotal: total,
             bytesDone: Math.round(total * loaded),
             percent: Math.round(loaded * 100),
-            etaSeconds: Math.round(remaining)
+            etaSeconds: Math.round(remaining),
           });
         });
-      }
+      },
     });
     session.destroy();
   }
 
-  remove(): void {
-    // The Prompt API currently delegates model removal to browser settings.
-    // The UI links there and immediately re-checks availability.
+  async remove(): Promise<boolean> {
+    if (!window.LanguageModel?.remove) return false;
+    await window.LanguageModel.remove();
+    return true;
   }
 }
 
 export class AiCapabilityDetector {
-  constructor(private readonly model: OnDeviceModel, private readonly store: CapabilityStore) {}
+  constructor(
+    private readonly model: OnDeviceModel,
+    private readonly store: CapabilityStore,
+  ) {}
   async detect(): Promise<AiCapability> {
-    const capability = await this.model.availability().catch(() => AiCapability.Unsupported);
+    const capability = await this.model
+      .availability()
+      .catch(() => AiCapability.Unsupported);
     this.store.set(capability);
     return capability;
   }
@@ -100,33 +126,82 @@ export class AiCapabilityDetector {
 
 export class ModelDownloadController {
   background = false;
-  constructor(private readonly model: OnDeviceModel, private readonly store: CapabilityStore) {}
+  progress: DownloadProgress | null = null;
+  private task: Promise<void> | null = null;
+  private readonly listeners = new Set<
+    (progress: DownloadProgress | null) => void
+  >();
+  constructor(
+    private readonly model: OnDeviceModel,
+    private readonly store: CapabilityStore,
+  ) {}
 
   async start(onProgress: (progress: DownloadProgress) => void): Promise<void> {
+    if (this.task) return this.task;
     this.store.set(AiCapability.Downloading);
-    await this.model.download(onProgress);
-    this.store.set(AiCapability.Ready);
+    this.task = this.model
+      .download((progress) => {
+        this.progress = progress;
+        onProgress(progress);
+        this.listeners.forEach((listener) => listener(progress));
+      })
+      .then(() => {
+        this.progress = {
+          bytesTotal: 1_900_000_000,
+          bytesDone: 1_900_000_000,
+          percent: 100,
+          etaSeconds: 0,
+        };
+        this.store.set(AiCapability.Ready);
+        this.listeners.forEach((listener) => listener(this.progress));
+      })
+      .catch((error) => {
+        this.store.set(AiCapability.Downloadable);
+        throw error;
+      })
+      .finally(() => {
+        this.task = null;
+      });
+    return this.task;
   }
 
-  continueInBackground(): void { this.background = true; }
+  continueInBackground(): void {
+    this.background = true;
+  }
+  subscribe(listener: (progress: DownloadProgress | null) => void): () => void {
+    this.listeners.add(listener);
+    listener(this.progress);
+    return () => this.listeners.delete(listener);
+  }
 }
 
 export class ModelManager {
   readonly sizeBytes = 1_900_000_000;
-  constructor(private readonly model: OnDeviceModel, private readonly store: CapabilityStore) {}
+  constructor(
+    private readonly model: OnDeviceModel,
+    private readonly store: CapabilityStore,
+  ) {}
   async status(): Promise<{ ready: boolean; sizeBytes: number }> {
-    return { ready: (await this.model.availability()) === AiCapability.Ready, sizeBytes: this.sizeBytes };
+    return {
+      ready: (await this.model.availability()) === AiCapability.Ready,
+      sizeBytes: this.sizeBytes,
+    };
   }
   async recheck(): Promise<AiCapability> {
     const state = await this.model.availability();
     this.store.set(state);
     return state;
   }
-  remove(): void {
-    this.model.remove();
-    this.store.set(AiCapability.Downloadable);
+  async remove(): Promise<"removed" | "browser-settings-required"> {
+    const removed = await this.model.remove();
+    if (removed) this.store.set(AiCapability.Downloadable);
+    return removed ? "removed" : "browser-settings-required";
   }
 }
 
 export const aiCapabilityStore = new CapabilityStore();
 export const onDeviceModel = new OnDeviceModel();
+export const modelDownloadController = new ModelDownloadController(
+  onDeviceModel,
+  aiCapabilityStore,
+);

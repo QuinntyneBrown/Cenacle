@@ -26,7 +26,7 @@ export class RoomApi {
   }
 
   async resolve(code: string): Promise<{ code: string; name: string; present: number; capacity: number } | null> {
-    const response = await fetch(`${this.origin}/api/rooms/${encodeURIComponent(code)}`, {
+    const response = await this.fetch(`${this.origin}/api/rooms/${encodeURIComponent(code)}`, {
       headers: { accept: "application/json" },
       cache: "no-store"
     });
@@ -69,7 +69,7 @@ export class RoomApi {
   }
 
   private async request<T = void>(path: string, init: RequestInit = {}): Promise<T> {
-    const response = await fetch(`${this.origin}${path}`, {
+    const response = await this.fetch(`${this.origin}${path}`, {
       ...init,
       headers: { "content-type": "application/json", accept: "application/json", ...init.headers }
     });
@@ -84,5 +84,17 @@ export class RoomApi {
       message?: string;
     };
     return new RoomApiError(body.code ?? "ORIGIN_ERROR", body.message ?? "The room origin could not complete the request.", response.status);
+  }
+
+  private async fetch(input: string, init: RequestInit): Promise<Response> {
+    try {
+      return await fetch(input, init);
+    } catch {
+      throw new RoomApiError(
+        "ORIGIN_UNREACHABLE",
+        "The live room origin could not be reached. Check the connection and try again.",
+        0,
+      );
+    }
   }
 }

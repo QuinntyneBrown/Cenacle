@@ -1,4 +1,7 @@
-import { liveRegionAnnouncer, LiveRegionPoliteness } from "../core/accessibility";
+import {
+  liveRegionAnnouncer,
+  LiveRegionPoliteness,
+} from "../core/accessibility";
 import { CaptionSegmentStatus, type CaptionSegment } from "../core/types";
 import type { LocalStore } from "../core/local-store";
 
@@ -7,43 +10,97 @@ export const supportedCaptionLanguages = [
   ["es-ES", "Español"],
   ["fr-FR", "Français"],
   ["sw-KE", "Kiswahili"],
-  ["pt-BR", "Português (Brasil)"]
+  ["pt-BR", "Português (Brasil)"],
 ] as const;
+
+export enum CaptionLanguageAvailability {
+  Unavailable = "unavailable",
+  Downloadable = "downloadable",
+  Downloading = "downloading",
+  Available = "available",
+}
 
 export class OnDeviceTranscriber {
   language = "en-US";
   private recognition: SpeechRecognition | null = null;
+  private inputTrack: MediaStreamTrack | undefined;
 
-  configure(language: string): void { this.language = language; }
-
-  isAvailable(): boolean {
-    return Boolean(window.SpeechRecognition ?? window.webkitSpeechRecognition);
+  configure(language: string): void {
+    this.language = language;
   }
 
-  start(speakerId: string, speakerName: string, emit: (segment: CaptionSegment) => void): void {
+  isAvailable(): boolean {
     const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition;
-    if (!Recognition) throw new DOMException("On-device transcription is unavailable.", "NotSupportedError");
+    if (!Recognition) return false;
+    const probe = new Recognition();
+    const localOnly = "processLocally" in probe;
+    probe.abort();
+    return localOnly;
+  }
+
+  async availability(language = this.language): Promise<CaptionLanguageAvailability> {
+    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    if (!Recognition || !this.isAvailable()) return CaptionLanguageAvailability.Unavailable;
+    if (!Recognition.available) return CaptionLanguageAvailability.Available;
+    return await Recognition.available({
+      langs: [language],
+      processLocally: true,
+      quality: "conversation",
+    }) as CaptionLanguageAvailability;
+  }
+
+  async installLanguage(language = this.language): Promise<boolean> {
+    const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    if (!Recognition?.install) return false;
+    return Recognition.install({ langs: [language], processLocally: true, quality: "conversation" });
+  }
+
+  start(
+    speakerId: string,
+    speakerName: string,
+    emit: (segment: CaptionSegment) => void,
+    audioTrack?: MediaStreamTrack,
+    speakerAtResult?: () => { id: string; name: string },
+  ): void {
+    const Recognition =
+      window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    if (!Recognition || !this.isAvailable())
+      throw new DOMException(
+        "On-device transcription is unavailable.",
+        "NotSupportedError",
+      );
     this.recognition = new Recognition();
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
     this.recognition.lang = this.language;
     this.recognition.processLocally = true;
+    this.inputTrack = audioTrack;
     this.recognition.onresult = (event) => {
-      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      for (
+        let index = event.resultIndex;
+        index < event.results.length;
+        index += 1
+      ) {
         const result = event.results[index];
         if (!result) continue;
         const text = result?.[0]?.transcript?.trim();
         if (!text) continue;
+        const speaker = speakerAtResult?.() ?? { id: speakerId, name: speakerName };
         emit({
-          speakerId,
-          speakerName,
+          speakerId: speaker.id,
+          speakerName: speaker.name,
           text,
-          status: result.isFinal ? CaptionSegmentStatus.Finalized : CaptionSegmentStatus.InProgress
+          status: result.isFinal
+            ? CaptionSegmentStatus.Finalized
+            : CaptionSegmentStatus.InProgress,
         });
       }
     };
-    this.recognition.onend = () => this.recognition?.start();
-    this.recognition.start();
+    this.recognition.onend = () => {
+      const recognition = this.recognition;
+      if (recognition) recognition.start(this.inputTrack);
+    };
+    this.recognition.start(audioTrack);
   }
 
   push(_frame: AudioData): void {
@@ -53,6 +110,7 @@ export class OnDeviceTranscriber {
   stop(): void {
     const recognition = this.recognition;
     this.recognition = null;
+    this.inputTrack = undefined;
     recognition?.stop();
   }
 }
@@ -62,25 +120,51 @@ export class CaptionController {
   language: string;
   private onSegmentListener: ((segment: CaptionSegment) => void) | null = null;
 
-  constructor(private readonly transcriber: OnDeviceTranscriber, private readonly store: LocalStore) {
+  constructor(
+    private readonly transcriber: OnDeviceTranscriber,
+    private readonly store: LocalStore,
+  ) {
     const settings = store.loadSettings();
     this.enabled = settings.captionsEnabled;
     this.language = settings.captionLanguage;
   }
 
-  start(speakerId: string, speakerName: string, listener: (segment: CaptionSegment) => void): void {
+  isAvailable(): boolean {
+    return this.transcriber.isAvailable();
+  }
+
+  availability(): Promise<CaptionLanguageAvailability> {
+    return this.transcriber.availability(this.language);
+  }
+
+  installLanguage(): Promise<boolean> {
+    return this.transcriber.installLanguage(this.language);
+  }
+
+  start(
+    speakerId: string,
+    speakerName: string,
+    listener: (segment: CaptionSegment) => void,
+    audioTrack?: MediaStreamTrack,
+    speakerAtResult?: () => { id: string; name: string },
+  ): void {
     if (!this.enabled || !this.transcriber.isAvailable()) return;
     this.onSegmentListener = listener;
     this.transcriber.configure(this.language);
-    this.transcriber.start(speakerId, speakerName, (segment) => this.onSegment(segment));
+    this.transcriber.start(speakerId, speakerName, (segment) => this.onSegment(segment), audioTrack, speakerAtResult);
   }
 
-  onAudioFrame(frame: AudioData): void { if (this.enabled) this.transcriber.push(frame); }
+  onAudioFrame(frame: AudioData): void {
+    if (this.enabled) this.transcriber.push(frame);
+  }
 
   onSegment(segment: CaptionSegment): void {
     this.onSegmentListener?.(segment);
     if (segment.status === CaptionSegmentStatus.Finalized) {
-      liveRegionAnnouncer.announce(`${segment.speakerName}: ${segment.text}`, LiveRegionPoliteness.Polite);
+      liveRegionAnnouncer.announce(
+        `${segment.speakerName}: ${segment.text}`,
+        LiveRegionPoliteness.Polite,
+      );
     }
   }
 
@@ -92,12 +176,15 @@ export class CaptionController {
   }
 
   setLanguage(code: string): void {
-    if (!supportedCaptionLanguages.some(([language]) => language === code)) throw new RangeError("Unsupported caption language.");
+    if (!supportedCaptionLanguages.some(([language]) => language === code))
+      throw new RangeError("Unsupported caption language.");
     this.language = code;
     this.transcriber.configure(code);
     const settings = this.store.loadSettings();
     this.store.saveSettings({ ...settings, captionLanguage: code });
   }
 
-  stop(): void { this.transcriber.stop(); }
+  stop(): void {
+    this.transcriber.stop();
+  }
 }

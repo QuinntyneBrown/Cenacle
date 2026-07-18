@@ -99,15 +99,23 @@ export class MediaEncoderPipeline {
   private video: VideoEncoder | null = null;
   private audio: AudioEncoder | null = null;
   private stopped = false;
+  private audioEnabled = true;
+  private videoEnabled = true;
+  private readonly captureTimes = {
+    audio: new Map<number, number>(),
+    video: new Map<number, number>()
+  };
 
   constructor(
     private readonly participantId: string,
-    private readonly publish: (packet: EncodedMediaPacket) => Promise<void>
+    private readonly publish: (packet: EncodedMediaPacket) => Promise<void>,
+    private readonly now: () => number = Date.now
   ) {}
 
   async start(stream: MediaStream, selection: CodecSelection): Promise<void> {
     this.stopped = false;
     const videoTrack = stream.getVideoTracks()[0];
+    this.videoEnabled = Boolean(videoTrack?.enabled);
     if (videoTrack) {
       this.video = new VideoEncoder({
         output: (chunk) => void this.emitChunk("video", selection.codecString, chunk),
@@ -117,6 +125,7 @@ export class MediaEncoderPipeline {
       void this.processVideo(videoTrack);
     }
     const audioTrack = stream.getAudioTracks()[0];
+    this.audioEnabled = Boolean(audioTrack?.enabled);
     if (audioTrack && typeof AudioEncoder === "function") {
       this.audio = new AudioEncoder({
         output: (chunk) => void this.emitChunk("audio", "opus", chunk),
@@ -133,7 +142,12 @@ export class MediaEncoderPipeline {
     this.audio?.close();
     this.video = null;
     this.audio = null;
+    this.captureTimes.video.clear();
+    this.captureTimes.audio.clear();
   }
+
+  setAudioEnabled(enabled: boolean): void { this.audioEnabled = enabled; }
+  setVideoEnabled(enabled: boolean): void { this.videoEnabled = enabled; }
 
   private async processVideo(track: MediaStreamTrack): Promise<void> {
     const Processor = window.MediaStreamTrackProcessor;
@@ -144,7 +158,10 @@ export class MediaEncoderPipeline {
       while (!this.stopped) {
         const { done, value } = await reader.read();
         if (done || !value) break;
-        if ((this.video?.encodeQueueSize ?? 0) < 2) this.video?.encode(value, { keyFrame: index++ % 60 === 0 });
+        if (this.videoEnabled && (this.video?.encodeQueueSize ?? 0) < 2) {
+          this.captureTimes.video.set(value.timestamp, this.now());
+          this.video?.encode(value, { keyFrame: index++ % 60 === 0 });
+        }
         value.close();
       }
     } finally {
@@ -160,7 +177,10 @@ export class MediaEncoderPipeline {
       while (!this.stopped) {
         const { done, value } = await reader.read();
         if (done || !value) break;
-        if ((this.audio?.encodeQueueSize ?? 0) < 4) this.audio?.encode(value);
+        if (this.audioEnabled && (this.audio?.encodeQueueSize ?? 0) < 4) {
+          this.captureTimes.audio.set(value.timestamp, this.now());
+          this.audio?.encode(value);
+        }
         value.close();
       }
     } finally {
@@ -178,8 +198,9 @@ export class MediaEncoderPipeline {
       timestamp: chunk.timestamp,
       duration: chunk.duration ?? null,
       key: chunk.type === "key",
-      captureTime: Date.now(),
+      captureTime: this.captureTimes[media].get(chunk.timestamp) ?? this.now(),
       data
     });
+    this.captureTimes[media].delete(chunk.timestamp);
   }
 }

@@ -65,10 +65,10 @@ type PromptWindow = Window & {
 export class CapabilityDetector {
   async detect(): Promise<CapabilityReport> {
     const probes = await Promise.allSettled([
-      this.probeWebTransport(),
-      this.probeWebCodecs(),
-      this.probeWebGpu(),
-      this.probeOnDeviceAi()
+      this.withTimeout(this.probeWebTransport()),
+      this.withTimeout(this.probeWebCodecs()),
+      this.withTimeout(this.probeWebGpu()),
+      this.withTimeout(this.probeOnDeviceAi())
     ]);
     const capabilities = Object.values(Capability);
     return new CapabilityReport(
@@ -99,13 +99,23 @@ export class CapabilityDetector {
     const promptWindow = window as PromptWindow;
     if (promptWindow.LanguageModel?.availability) {
       const state = await promptWindow.LanguageModel.availability();
-      return state !== "unavailable";
+      return state === "available";
     }
     if (promptWindow.ai?.languageModel?.capabilities) {
       const result = await promptWindow.ai.languageModel.capabilities();
-      return result.available !== "no";
+      return result.available === "readily";
     }
     return false;
+  }
+
+  private withTimeout(probe: Promise<boolean>, timeoutMs = 1_200): Promise<boolean> {
+    return new Promise((resolve) => {
+      const timer = window.setTimeout(() => resolve(false), timeoutMs);
+      void probe.then(
+        (value) => { window.clearTimeout(timer); resolve(value); },
+        () => { window.clearTimeout(timer); resolve(false); }
+      );
+    });
   }
 }
 

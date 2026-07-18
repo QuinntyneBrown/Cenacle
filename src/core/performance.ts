@@ -27,6 +27,10 @@ export class LatencyMeter {
     return this.latest ? `${Math.round(this.latest.glassToGlassMs)} ms` : this.placeholder();
   }
 
+  latestSample(): LatencySample | null {
+    return this.latest ? { ...this.latest } : null;
+  }
+
   placeholder(): string {
     return "— ms";
   }

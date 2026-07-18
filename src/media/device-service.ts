@@ -72,3 +72,35 @@ export class MicTest {
     this.context = null;
   }
 }
+
+/** Measures an existing capture stream without acquiring or stopping its tracks. */
+export class MediaStreamLevelMeter {
+  private context: AudioContext | null = null;
+  private frame = 0;
+
+  async start(stream: MediaStream, onLevel: (rms: number, db: number) => void): Promise<void> {
+    this.stop();
+    if (!stream.getAudioTracks().length) return;
+    this.context = new AudioContext({ latencyHint: "interactive" });
+    await this.context.resume();
+    const analyser = this.context.createAnalyser();
+    analyser.fftSize = 512;
+    this.context.createMediaStreamSource(stream).connect(analyser);
+    const samples = new Float32Array(analyser.fftSize);
+    const update = () => {
+      analyser.getFloatTimeDomainData(samples);
+      const rms = Math.sqrt(samples.reduce((sum, value) => sum + value * value, 0) / samples.length);
+      const db = rms > 0 ? Math.max(-96, 20 * Math.log10(rms)) : -Infinity;
+      onLevel(rms, db);
+      this.frame = requestAnimationFrame(update);
+    };
+    update();
+  }
+
+  stop(): void {
+    cancelAnimationFrame(this.frame);
+    this.frame = 0;
+    void this.context?.close();
+    this.context = null;
+  }
+}

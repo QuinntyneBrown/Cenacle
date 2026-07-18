@@ -16,20 +16,49 @@ export class JournalEditor {
 }
 
 export class ReflectionService {
-  constructor(private readonly model = new OnDeviceModel()) {}
+  constructor(
+    private readonly model = new OnDeviceModel(),
+    private readonly policy = new ReflectionPolicy()
+  ) {}
   async isAvailable(): Promise<boolean> { return (await this.model.availability()) === "ready"; }
 
   async requestReflection(entryText: string): Promise<Reflection> {
     if (!entryText.trim()) throw new RangeError("Write something before asking for a reflection.");
-    const text = await this.model.prompt(
+    let text = await this.model.prompt(
       `Reflect gently on the following journal entry. Name what you notice without diagnosing, directing, claiming divine authority, or telling the writer what to do. If you mention Scripture, call it illustrative. End by leaving the last word with the writer.\n\n${entryText}`,
       "You are a gentle, non-authoritative reflection aid running entirely on the user's device. Never claim to speak for God."
     );
+    if (!this.policy.isSafe(text)) {
+      text = await this.model.prompt(
+        `Rewrite this reflection so it contains no commands, diagnosis, claim to divine authority, or statement of what the writer should do. Use tentative language, label Scripture as illustrative, and explicitly leave the last word with the writer.\n\n${text}`,
+        "You are a non-authoritative editing aid running on-device."
+      );
+    }
+    if (!this.policy.isSafe(text)) {
+      throw new DOMException("The local model did not produce a safely non-directive reflection.", "DataError");
+    }
     return {
       text,
+      illustrativeReference: this.policy.illustrativeReference(text),
       affirmation: "Generated on this device · 0 requests out · the last word stays with you.",
       isDirective: false
     };
+  }
+}
+
+export class ReflectionPolicy {
+  private readonly directive = /\b(you\s+(?:must|should|need to|have to)|god\s+(?:says|told me|wants you)|the lord\s+(?:says|commands)|diagnosis|diagnose[sd]?)\b/i;
+
+  isSafe(text: string): boolean {
+    const normalized = text.trim();
+    const tentative = /\b(perhaps|may|might|could|seems?|notice|appears?)\b/i.test(normalized);
+    const leavesLastWord = /\blast word\b[^.]{0,50}\b(you|writer|yours)\b/i.test(normalized);
+    return normalized.length > 0 && tentative && leavesLastWord && !this.directive.test(normalized);
+  }
+
+  illustrativeReference(text: string): string | undefined {
+    const match = text.match(/\b(?:illustrative(?:ly)?(?:\s+scripture)?[:\s-]*)?((?:[1-3]\s+)?[A-Z][a-z]+\s+\d{1,3}:\d{1,3}(?:[–-]\d{1,3})?)/);
+    return match?.[1];
   }
 }
 

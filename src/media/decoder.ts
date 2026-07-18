@@ -6,7 +6,10 @@ export class FrameRenderer {
   private callback: (() => void) | null = null;
 
   constructor(readonly surface: HTMLCanvasElement) {
-    this.context = surface.getContext("2d", { alpha: false, desynchronized: true });
+    this.context = surface.getContext("2d", {
+      alpha: false,
+      desynchronized: true,
+    });
   }
 
   render(frame: VideoFrame): void {
@@ -26,44 +29,67 @@ export class FrameRenderer {
     this.context.fillRect(0, 0, this.surface.width, this.surface.height);
     this.context.fillStyle = "#f6ce8b";
     this.context.textAlign = "center";
-    this.context.fillText("Camera off", this.surface.width / 2, this.surface.height / 2);
+    this.context.fillText(
+      "Camera off",
+      this.surface.width / 2,
+      this.surface.height / 2,
+    );
   }
 
-  onFrame(callback: () => void): void { this.callback = callback; }
+  onFrame(callback: () => void): void {
+    this.callback = callback;
+  }
 }
 
 export class MediaDecoderPipeline {
   private readonly decoders = new Map<string, VideoDecoder>();
   private readonly audioDecoders = new Map<string, AudioDecoder>();
-  private readonly audio = new AudioPlayback();
+  private readonly audio: AudioPlayback;
   readonly latency = new LatencyMeter();
   readonly budget = new LatencyBudget();
 
-  constructor(private readonly rendererFor: (participantId: string) => FrameRenderer | null) {}
+  constructor(
+    private readonly rendererFor: (
+      participantId: string,
+    ) => FrameRenderer | null,
+    private readonly now: () => number = Date.now,
+    speakerId = "",
+  ) {
+    this.audio = new AudioPlayback();
+    if (speakerId) void this.audio.setOutputDevice(speakerId);
+  }
 
   decode(packet: EncodedMediaPacket): void {
     if (packet.media === "audio") {
       this.decodeAudio(packet);
       return;
     }
-    const sample = this.latency.measure(packet.captureTime, Date.now());
+    const sample = this.latency.measure(packet.captureTime, this.now());
     if (this.budget.shouldDrop(sample) && !packet.key) return;
     let decoder = this.decoders.get(packet.participantId);
     if (!decoder) {
       decoder = new VideoDecoder({
-        output: (frame) => this.rendererFor(packet.participantId)?.render(frame) ?? frame.close(),
-        error: (error) => console.error("Video decoder", error)
+        output: (frame) =>
+          this.rendererFor(packet.participantId)?.render(frame) ??
+          frame.close(),
+        error: (error) => console.error("Video decoder", error),
       });
-      decoder.configure({ codec: packet.codec, hardwareAcceleration: "prefer-hardware", optimizeForLatency: true });
+      decoder.configure({
+        codec: packet.codec,
+        hardwareAcceleration: "prefer-hardware",
+        optimizeForLatency: true,
+      });
       this.decoders.set(packet.participantId, decoder);
     }
     if (decoder.decodeQueueSize > 2 && !packet.key) return;
-    decoder.decode(new EncodedVideoChunk({
-      type: packet.key ? "key" : "delta",
-      timestamp: packet.timestamp,
-      duration: packet.duration ?? undefined,
-      data: packet.data
-    }));
+    decoder.decode(
+      new EncodedVideoChunk({
+        type: packet.key ? "key" : "delta",
+        timestamp: packet.timestamp,
+        duration: packet.duration ?? undefined,
+        data: packet.data,
+      }),
+    );
   }
 
   close(): void {
@@ -74,39 +100,68 @@ export class MediaDecoderPipeline {
     this.audio.close();
   }
 
-  audioLevel(participantId: string): number { return this.audio.level(participantId); }
+  audioLevel(participantId: string): number {
+    return this.audio.level(participantId);
+  }
+  audioAnalysisOutput(): AudioNode {
+    return this.audio.analysisOutput();
+  }
+  captionTrack(localStream: MediaStream): MediaStreamTrack | null {
+    return this.audio.captionTrack(localStream);
+  }
 
   private decodeAudio(packet: EncodedMediaPacket): void {
     let decoder = this.audioDecoders.get(packet.participantId);
     if (!decoder) {
       decoder = new AudioDecoder({
         output: (data) => this.audio.play(packet.participantId, data),
-        error: (error) => console.error("Audio decoder", error)
+        error: (error) => console.error("Audio decoder", error),
       });
-      decoder.configure({ codec: packet.codec, sampleRate: 48_000, numberOfChannels: 1 });
+      decoder.configure({
+        codec: packet.codec,
+        sampleRate: 48_000,
+        numberOfChannels: 1,
+      });
       this.audioDecoders.set(packet.participantId, decoder);
     }
     if (decoder.decodeQueueSize > 4) return;
-    decoder.decode(new EncodedAudioChunk({
-      type: packet.key ? "key" : "delta",
-      timestamp: packet.timestamp,
-      duration: packet.duration ?? undefined,
-      data: packet.data
-    }));
+    decoder.decode(
+      new EncodedAudioChunk({
+        type: packet.key ? "key" : "delta",
+        timestamp: packet.timestamp,
+        duration: packet.duration ?? undefined,
+        data: packet.data,
+      }),
+    );
   }
 }
 
 export class AudioPlayback {
   readonly context = new AudioContext({ latencyHint: "interactive" });
   readonly output = this.context.createGain();
+  private readonly analysisMix = this.context.createGain();
+  private readonly captionMix = this.context.createMediaStreamDestination();
+  private readonly localSources = new WeakMap<
+    MediaStream,
+    MediaStreamAudioSourceNode
+  >();
   private nextTime = 0;
   private readonly levels = new Map<string, number>();
 
-  constructor() { this.output.connect(this.context.destination); }
+  constructor() {
+    this.output.connect(this.context.destination);
+    this.output.connect(this.captionMix);
+    this.output.connect(this.analysisMix);
+  }
 
   play(participantId: string, data: AudioData): void {
+    void this.context.resume();
     const channels = data.numberOfChannels;
-    const buffer = this.context.createBuffer(channels, data.numberOfFrames, data.sampleRate);
+    const buffer = this.context.createBuffer(
+      channels,
+      data.numberOfFrames,
+      data.sampleRate,
+    );
     let sum = 0;
     for (let channel = 0; channel < channels; channel += 1) {
       const samples = new Float32Array(data.numberOfFrames);
@@ -114,24 +169,58 @@ export class AudioPlayback {
       buffer.copyToChannel(samples, channel);
       for (const sample of samples) sum += sample * sample;
     }
-    this.levels.set(participantId, Math.sqrt(sum / Math.max(1, data.numberOfFrames * channels)));
+    this.levels.set(
+      participantId,
+      Math.sqrt(sum / Math.max(1, data.numberOfFrames * channels)),
+    );
     data.close();
     const source = this.context.createBufferSource();
     source.buffer = buffer;
     source.connect(this.output);
-    this.nextTime = Math.max(this.context.currentTime, Math.min(this.nextTime, this.context.currentTime + 0.1));
+    this.nextTime = Math.max(
+      this.context.currentTime,
+      Math.min(this.nextTime, this.context.currentTime + 0.1),
+    );
     source.start(this.nextTime);
     this.nextTime += buffer.duration;
   }
 
-  level(participantId: string): number { return this.levels.get(participantId) ?? 0; }
-  close(): void { void this.context.close(); }
+  level(participantId: string): number {
+    return this.levels.get(participantId) ?? 0;
+  }
+  captionTrack(localStream: MediaStream): MediaStreamTrack | null {
+    if (
+      localStream.getAudioTracks().length &&
+      !this.localSources.has(localStream)
+    ) {
+      const source = this.context.createMediaStreamSource(localStream);
+      source.connect(this.captionMix);
+      source.connect(this.analysisMix);
+      this.localSources.set(localStream, source);
+    }
+    return this.captionMix.stream.getAudioTracks()[0] ?? null;
+  }
+  analysisOutput(): AudioNode {
+    return this.analysisMix;
+  }
+  async setOutputDevice(speakerId: string): Promise<boolean> {
+    if (!speakerId || !this.context.setSinkId) return false;
+    await this.context.setSinkId(speakerId);
+    return true;
+  }
+  close(): void {
+    void this.context.close();
+  }
 }
 
 export class ActiveSpeakerDetector {
   readonly threshold = 0.06;
   private speaking = false;
 
-  update(level: number): void { this.speaking = level >= this.threshold; }
-  isSpeaking(): boolean { return this.speaking; }
+  update(level: number): void {
+    this.speaking = level >= this.threshold;
+  }
+  isSpeaking(): boolean {
+    return this.speaking;
+  }
 }

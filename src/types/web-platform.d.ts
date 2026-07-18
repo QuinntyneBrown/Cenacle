@@ -16,6 +16,7 @@ interface Window {
 
 interface LanguageModelFactory {
   availability(options?: unknown): Promise<"available" | "downloadable" | "downloading" | "unavailable">;
+  remove?(): Promise<void>;
   create(options?: {
     initialPrompts?: Array<{ role: "system" | "user" | "assistant"; content: string }>;
     monitor?: (monitor: EventTarget) => void;
@@ -43,6 +44,8 @@ interface SpeechRecognitionEvent extends Event {
 }
 
 declare class SpeechRecognition extends EventTarget {
+  static available: ((options: SpeechRecognitionOptions) => Promise<SpeechRecognitionAvailability>) | undefined;
+  static install: ((options: SpeechRecognitionOptions) => Promise<boolean>) | undefined;
   continuous: boolean;
   interimResults: boolean;
   lang: string;
@@ -50,12 +53,24 @@ declare class SpeechRecognition extends EventTarget {
   onresult: ((event: SpeechRecognitionEvent) => void) | null;
   onerror: ((event: Event) => void) | null;
   onend: (() => void) | null;
-  start(): void;
+  start(audioTrack?: MediaStreamTrack): void;
   stop(): void;
   abort(): void;
 }
 
+interface SpeechRecognitionOptions {
+  langs: string[];
+  processLocally?: boolean;
+  quality?: "command" | "dictation" | "conversation";
+}
+
+type SpeechRecognitionAvailability = "unavailable" | "downloadable" | "downloading" | "available";
+
 interface WebTransportOptions {
   allowPooling?: boolean;
   requireUnreliable?: boolean;
+}
+
+interface AudioContext {
+  setSinkId?(sinkId: string): Promise<void>;
 }

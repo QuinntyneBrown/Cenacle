@@ -34,6 +34,7 @@ export class RoomResolver {
 
 export interface LiveRoomResources {
   room: Room;
+  displayName: string;
   stream: MediaStream;
   transport: RoomTransport;
   encoder: MediaEncoderPipeline;
@@ -60,13 +61,24 @@ export class GoLiveController {
       throw new DOMException("Live gatherings need WebTransport and WebCodecs.", "NotSupportedError");
     }
     if (!setup.hasValidName()) throw new RangeError("Name the gathering with 1–60 characters.");
-    const stream = existingStream ?? await this.devices.acquire(setup.cameraId, setup.microphoneId, cameraEnabled, true);
-    const room = await this.api.create(setup.name.trim(), hostName.trim() || "Host");
     const transport = new RoomTransport(this.roomOrigin);
-    await transport.open(room.credential, room.participantId, hostName.trim() || "Host", ParticipantRole.Host);
-    const encoder = new MediaEncoderPipeline(room.participantId, (packet) => transport.publish(packet));
-    await encoder.start(stream, await new CodecNegotiator(preferredCodec).negotiate());
-    return { room, stream, transport, encoder };
+    const ownsStream = !existingStream;
+    const stream = existingStream ?? await this.devices.acquire(setup.cameraId, setup.microphoneId, cameraEnabled, true);
+    let room: Room | null = null;
+    let encoder: MediaEncoderPipeline | null = null;
+    try {
+      room = await this.api.create(setup.name.trim(), hostName.trim() || "Host");
+      await transport.open(room.credential, room.participantId, hostName.trim() || "Host", ParticipantRole.Host);
+      encoder = new MediaEncoderPipeline(room.participantId, (packet) => transport.publish(packet), () => transport.roomNow());
+      await encoder.start(stream, await new CodecNegotiator(preferredCodec).negotiate());
+      return { room, displayName: hostName.trim() || "Host", stream, transport, encoder };
+    } catch (error) {
+      encoder?.stop();
+      transport.close(1, "go-live failed");
+      if (room) await this.api.end(room).catch(() => undefined);
+      if (ownsStream) this.devices.stop(stream);
+      throw error;
+    }
   }
 }
 
@@ -83,13 +95,24 @@ export class EnterRoomController {
     preferredCodec: ConstructorParameters<typeof CodecNegotiator>[0],
     existingStream?: MediaStream
   ): Promise<LiveRoomResources> {
-    const stream = existingStream ?? await this.devices.acquire(undefined, undefined, config.cameraEnabled, config.micEnabled);
-    const room = await this.api.admit(code, config.resolvedName());
     const transport = new RoomTransport(this.roomOrigin);
-    await transport.open(room.credential, room.participantId, config.resolvedName(), ParticipantRole.Participant);
-    const encoder = new MediaEncoderPipeline(room.participantId, (packet) => transport.publish(packet));
-    await encoder.start(stream, await new CodecNegotiator(preferredCodec).negotiate());
-    return { room, stream, transport, encoder };
+    const ownsStream = !existingStream;
+    const stream = existingStream ?? await this.devices.acquire(undefined, undefined, config.cameraEnabled, config.micEnabled);
+    let room: Room | null = null;
+    let encoder: MediaEncoderPipeline | null = null;
+    try {
+      room = await this.api.admit(code, config.resolvedName());
+      await transport.open(room.credential, room.participantId, config.resolvedName(), ParticipantRole.Participant);
+      encoder = new MediaEncoderPipeline(room.participantId, (packet) => transport.publish(packet), () => transport.roomNow());
+      await encoder.start(stream, await new CodecNegotiator(preferredCodec).negotiate());
+      return { room, displayName: config.resolvedName(), stream, transport, encoder };
+    } catch (error) {
+      encoder?.stop();
+      transport.close(1, "entry failed");
+      if (room) await this.api.leave(room).catch(() => undefined);
+      if (ownsStream) this.devices.stop(stream);
+      throw error;
+    }
   }
 }
 
@@ -127,7 +150,7 @@ export class RoomLifecycleController {
         await this.resources.transport.open(
           this.resources.room.credential,
           this.resources.room.participantId,
-          "Rejoining participant",
+          this.resources.displayName,
           this.resources.room.role
         );
         this.resources.transport.resumeOutbound();

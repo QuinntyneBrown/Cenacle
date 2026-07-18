@@ -16,6 +16,22 @@ type ListenerMap = {
   drop: (error?: unknown) => void;
 };
 
+/** Maps local epoch time into the room origin's clock using the lowest-RTT sample. */
+export class RoomClock {
+  private offsetMs = 0;
+  private bestRttMs = Number.POSITIVE_INFINITY;
+
+  observe(clientSentAt: number, serverAt: number, clientReceivedAt: number): void {
+    const rtt = Math.max(0, clientReceivedAt - clientSentAt);
+    if (rtt > this.bestRttMs) return;
+    this.bestRttMs = rtt;
+    this.offsetMs = serverAt - (clientSentAt + clientReceivedAt) / 2;
+  }
+
+  now(localNow = Date.now()): number { return localNow + this.offsetMs; }
+  uncertaintyMs(): number | null { return Number.isFinite(this.bestRttMs) ? this.bestRttMs / 2 : null; }
+}
+
 export class RoomTransport {
   private transport: WebTransport | null = null;
   private datagramWriter: WritableStreamDefaultWriter<Uint8Array> | null = null;
@@ -25,11 +41,16 @@ export class RoomTransport {
     drop: new Set()
   };
   private outboundPaused = false;
+  private closing = false;
+  private clockTimer = 0;
+  readonly clock = new RoomClock();
 
   constructor(readonly origin: string) {}
 
   async open(credential: RoomCredential, participantId: string, displayName: string, role: string): Promise<void> {
     if (!window.WebTransport) throw new DOMException("WebTransport is unavailable.", "NotSupportedError");
+    this.closeTransportOnly();
+    this.closing = false;
     const url = new URL("/wt", this.origin);
     url.searchParams.set("code", credential.code);
     url.searchParams.set("token", credential.token);
@@ -50,7 +71,13 @@ export class RoomTransport {
     this.datagramWriter = this.transport.datagrams.writable.getWriter();
     void this.readDatagrams();
     void this.readStreams();
-    void this.transport.closed.catch((error) => this.emit("drop", error));
+    const opened = this.transport;
+    void opened.closed.then(
+      () => { if (!this.closing && this.transport === opened) this.emit("drop", new DOMException("The room connection closed.", "NetworkError")); },
+      (error) => { if (!this.closing && this.transport === opened) this.emit("drop", error); }
+    );
+    await this.synchronizeClock();
+    this.clockTimer = window.setInterval(() => void this.synchronizeClock(), 30_000);
   }
 
   async sendDatagram(message: ControlMessage): Promise<void> {
@@ -87,6 +114,30 @@ export class RoomTransport {
   pauseOutbound(): void { this.outboundPaused = true; }
   resumeOutbound(): void { this.outboundPaused = false; }
   isConnected(): boolean { return Boolean(this.transport); }
+  roomNow(): number { return this.clock.now(); }
+
+  async synchronizeClock(timeoutMs = 800): Promise<boolean> {
+    const clientTime = Date.now();
+    return new Promise<boolean>((resolve) => {
+      let timer = 0;
+      let settled = false;
+      let unsubscribe: () => void = () => undefined;
+      const finish = (result: boolean) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        unsubscribe();
+        resolve(result);
+      };
+      unsubscribe = this.on("control", (message) => {
+        if (message.type !== "pong" || message.clientTime !== clientTime) return;
+        this.clock.observe(clientTime, message.serverTime, Date.now());
+        finish(true);
+      });
+      timer = window.setTimeout(() => finish(false), timeoutMs);
+      void this.sendDatagram({ type: "ping", clientTime }).catch(() => finish(false));
+    });
+  }
 
   on<K extends keyof ListenerMap>(event: K, listener: ListenerMap[K]): () => void {
     (this.listeners[event] as Set<ListenerMap[K]>).add(listener);
@@ -94,10 +145,8 @@ export class RoomTransport {
   }
 
   close(code = 0, reason = "left room"): void {
-    this.datagramWriter?.releaseLock();
-    this.transport?.close({ closeCode: code, reason });
-    this.transport = null;
-    this.datagramWriter = null;
+    this.closing = true;
+    this.closeTransportOnly(code, reason);
   }
 
   private async readDatagrams(): Promise<void> {
@@ -114,7 +163,7 @@ export class RoomTransport {
         }
       }
     } catch (error) {
-      this.emit("drop", error);
+      if (!this.closing) this.emit("drop", error);
     } finally {
       reader.releaseLock();
     }
@@ -130,7 +179,7 @@ export class RoomTransport {
         void this.consumeStream(value);
       }
     } catch (error) {
-      this.emit("drop", error);
+      if (!this.closing) this.emit("drop", error);
     } finally {
       streamReader.releaseLock();
     }
@@ -163,5 +212,14 @@ export class RoomTransport {
     for (const listener of this.listeners[event]) {
       (listener as (item: typeof value) => void)(value);
     }
+  }
+
+  private closeTransportOnly(code = 0, reason = "replaced connection"): void {
+    window.clearInterval(this.clockTimer);
+    this.clockTimer = 0;
+    try { this.datagramWriter?.releaseLock(); } catch { /* A pending writer is released by transport close. */ }
+    try { this.transport?.close({ closeCode: code, reason }); } catch { /* Already closed. */ }
+    this.transport = null;
+    this.datagramWriter = null;
   }
 }

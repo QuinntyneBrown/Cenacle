@@ -81,7 +81,14 @@ export function JournalPanel({ compact = false }: { compact?: boolean }) {
     setReflecting(true);
     setMessage("");
     try {
-      const { result } = await guard.assertZeroEgress(() => reflections.requestReflection(draft.trim() || current!.text));
+      let entry = current;
+      const normalizedDraft = draft.trim();
+      if (normalizedDraft && (!entry || entry.text !== normalizedDraft)) {
+        entry = service.save(normalizedDraft);
+        setCurrent(entry);
+        setEntries(service.listEarlier());
+      }
+      const { result } = await guard.assertZeroEgress(() => reflections.requestReflection(entry!.text));
       setReflection(result);
     } catch (error) { setMessage((error as Error).message); }
     finally { setReflecting(false); }
@@ -99,7 +106,7 @@ export function JournalPanel({ compact = false }: { compact?: boolean }) {
     <div className="journal-editor stack gap-3"><label className="label" htmlFor={compact ? "journal-compact" : "journal"}>What are you carrying?</label><textarea className="textarea" id={compact ? "journal-compact" : "journal"} rows={compact ? 6 : 10} maxLength={10_000} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="You can say it plainly here…"/><div className="between"><span className="mono small muted">{editor.wordCount} words</span><PrivacySeal/></div><div className="cluster gap-2"><button className="btn btn--primary" onClick={save}>Save entry</button><button className="btn btn--ghost" onClick={() => { setDraft(""); editor.clear(); }}>Clear draft</button><button className="btn btn--quiet" disabled={reflecting || (!draft.trim() && !current)} onClick={() => void reflect()}><Icon name="sparkle"/>{reflecting ? "Reflecting on this device…" : "Ask for a reflection"}</button></div></div>
     {message && <p className="banner banner--sage" role="status">{message}</p>}
     {reflection && <div className="reflection stack gap-3"><p className="sacred">{reflection.text}</p>{reflection.illustrativeReference && <p className="small">Illustrative Scripture: {reflection.illustrativeReference}</p>}<p className="small muted">{reflection.affirmation}</p><div className="cluster gap-2"><button className="btn btn--primary" onClick={() => feedback(ReflectionFeedback.KeepWithEntry)}>Keep with entry</button><button className="btn btn--quiet" onClick={() => feedback(ReflectionFeedback.NotHelpful)}>Not helpful</button></div></div>}
-    <section><h2 className="h3">Earlier <span className="small muted">· local to this device</span></h2>{entries.length === 0 ? <div className="paper-panel mt-3"><p className="h3">Your first page is waiting.</p><p className="muted">This private journal begins only when you write.</p></div> : <ul className="journal-list">{entries.map((entry) => <li key={entry.id}><button className="btn btn--quiet btn--block" onClick={() => { setCurrent(entry); setDraft(entry.text); }}><span>{entry.text.slice(0, 110)}{entry.text.length > 110 ? "…" : ""}</span><span className="mono small">{new Date(entry.createdAt).toLocaleDateString()}</span></button>{entry.keptReflection && <p className="reflection small mt-2">{entry.keptReflection.text}</p>}</li>)}</ul>}</section>
+    <section><h2 className="h3">Earlier <span className="small muted">· local to this device</span></h2>{entries.length === 0 ? <div className="paper-panel mt-3"><p className="h3">Your first page is waiting.</p><p className="muted">This private, on-device journal begins only when you write.</p></div> : <ul className="journal-list">{entries.map((entry) => <li key={entry.id}><button className="btn btn--quiet btn--block" onClick={() => { setCurrent(entry); setDraft(entry.text); }}><span>{entry.text.slice(0, 110)}{entry.text.length > 110 ? "…" : ""}</span><span className="mono small">{new Date(entry.createdAt).toLocaleDateString()}</span></button>{entry.keptReflection && <p className="reflection small mt-2">{entry.keptReflection.text}</p>}</li>)}</ul>}</section>
   </div>;
 }
 
