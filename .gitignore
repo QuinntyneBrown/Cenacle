@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.vite/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pem
+*.key
+*.qlog
+.env
+.env.local
+room_origin/data/

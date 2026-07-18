@@ -1,0 +1,4 @@
+aioquic==1.3.0
+cryptography>=46.0.0,<47
+pytest>=9.0.0,<10
+pytest-asyncio>=1.3.0,<2
