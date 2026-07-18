@@ -1,0 +1,67 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Ambient sanctuary visuals
+
+enum VisualMode {
+  GpuAtmosphere
+  Still
+}
+
+class SanctuaryLayer {
+  +resolve(): VisualMode
+  +mount(): void
+}
+
+class VisualsSettings {
+  +visualsEnabled: boolean
+  +load(): void
+  +setEnabled(on: boolean): void
+}
+
+class ReduceMotion {
+  +isReduced(): boolean
+}
+
+class WebGpuProbe {
+  +isAvailable(): boolean
+}
+
+class SanctuaryRenderer {
+  +targetFps: number
+  +start(): void
+  +stop(): void
+}
+
+class StillBackdrop {
+  +show(): void
+}
+
+class LocalStore {
+  +get(key: string): string
+  +set(key: string, value: string): void
+}
+
+class AudioAnalyser <<neighbouring L2-054>> {
+  +shaderParams(): ShaderParams
+}
+
+SanctuaryLayer ..> VisualsSettings : reads
+SanctuaryLayer ..> ReduceMotion : checks
+SanctuaryLayer ..> WebGpuProbe : checks
+SanctuaryLayer --> VisualMode : resolves
+SanctuaryLayer --> SanctuaryRenderer : mounts
+SanctuaryLayer --> StillBackdrop : falls back to
+VisualsSettings --> LocalStore : persists via
+SanctuaryRenderer ..> AudioAnalyser : reads shader params from (L2-054, neighbouring)
+@enduml

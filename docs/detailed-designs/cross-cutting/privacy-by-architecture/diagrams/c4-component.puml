@@ -1,0 +1,28 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Privacy by architecture (Prayer client)
+
+Container_Boundary(spa, "Prayer client") {
+  Boundary(pb, "PrivacyBoundary — on the device", "Trust boundary") {
+    Component(surfaces, "Word action surfaces", "UI", "Journal editor, Scripture surfacing, and captions — where private content originates")
+    Component(onDevice, "OnDeviceModel", "Prompt API wrapper", "Reflections, Scripture matching, and transcription run on the device; never a server call")
+    Component(localStore, "LocalStore", "IndexedDB / localStorage wrapper", "Journal entries, saved passages, recent themes, and settings")
+    Component(seal, "PrivacySeal", "UI affirmation", "Renders the 0 requests seal at each private-content surface")
+  }
+  Component(guard, "NetworkGuard", "Client egress guard", "Confirms a private action issues zero outbound requests")
+  Component(csp, "Content-Security-Policy", "connect-src allowlist", "Permits the room transport and static origins only")
+  Component(transport, "RoomTransport", "WebTransport client", "Publishes live presence media only; carries no private content")
+}
+
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Relays live presence media; persists no media (L2-071)")
+System_Ext(cloudai, "Off-device AI / analytics", "Outside the privacy boundary")
+
+Rel(surfaces, onDevice, "Runs reflections, matching, and transcription on")
+Rel(surfaces, localStore, "Reads and writes private content in")
+Rel(surfaces, seal, "Affirms 0 requests through")
+Rel(guard, surfaces, "Confirms zero egress for (L2-070)")
+Rel(csp, transport, "Constrains the connections of")
+Rel(transport, origin, "Publishes live presence media to", "WebTransport")
+Rel(csp, cloudai, "Denies any connection to (L2-070)", "connect-src deny")
+@enduml

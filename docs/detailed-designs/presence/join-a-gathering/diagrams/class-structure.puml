@@ -1,0 +1,94 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Join a live gathering
+
+enum ResolveStatus {
+  Open
+  NotFound
+}
+
+class JoinDialog {
+  +input: string
+  +submit(): void
+}
+
+class RoomResolver {
+  +resolve(input: string): RoomRef
+  +extractCode(input: string): string
+  +isWellFormed(code: string): boolean
+}
+
+class RoomRef {
+  +code: string
+  +status: ResolveStatus
+}
+
+class GreenRoomView {
+  +config: JoinConfig
+  +preview(): void
+  +enter(): void
+}
+
+class JoinConfig {
+  +displayName: string
+  +micEnabled: boolean
+  +cameraEnabled: boolean
+  +resolvedName(): string
+}
+
+class PermissionPrimer {
+  +show(): void
+  +allow(): void
+  +dismiss(): void
+}
+
+class MediaDeviceService {
+  +acquire(cameraId: string, microphoneId: string): MediaStream
+}
+
+class EnterRoomController {
+  +enter(ref: RoomRef, config: JoinConfig): Room
+}
+
+class RoomTransport {
+  +open(url: string): void
+  +subscribe(): void
+  +close(): void
+}
+
+class MediaDecoder {
+  +configure(): void
+  +decode(chunk: EncodedChunk): VideoFrame
+}
+
+class Room {
+  +code: string
+  +role: string
+}
+
+JoinDialog ..> RoomResolver : resolves input via
+RoomResolver --> RoomRef : produces
+RoomRef --> ResolveStatus : has
+GreenRoomView --> JoinConfig : holds
+GreenRoomView ..> PermissionPrimer : primes permission via
+GreenRoomView ..> EnterRoomController : enters through
+PermissionPrimer ..> MediaDeviceService : triggers native prompt via
+EnterRoomController ..> RoomRef : reads
+EnterRoomController ..> JoinConfig : reads
+EnterRoomController --> MediaDeviceService : uses
+EnterRoomController --> RoomTransport : uses
+EnterRoomController --> MediaDecoder : uses
+EnterRoomController --> Room : produces
+RoomTransport ..> MediaDecoder : hands chunks to
+@enduml

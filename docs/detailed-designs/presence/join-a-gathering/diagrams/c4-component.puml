@@ -1,0 +1,36 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Join a live gathering (Prayer client)
+
+Person(joiner, "Joiner", "Enters a code or link, previews, and enters the room")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(dialog, "JoinDialog", "UI view", "Accepts a six-character code or a pasted invite link and submits it")
+  Component(resolver, "RoomResolver", "Client service", "Normalizes a code or .../r/{CODE} link and resolves it to an open room")
+  Component(greenRoom, "GreenRoomView", "UI view", "Self-preview, display name, and microphone/camera pre-toggles before entering")
+  Component(primer, "PermissionPrimer", "UI component", "Explains camera and microphone use before the native permission prompt")
+  Component(deviceSvc, "MediaDeviceService", "Client service", "Acquires camera and microphone via navigator.mediaDevices")
+  Component(enter, "EnterRoomController", "Client controller", "Requests permission, subscribes, decodes, and enters the live room")
+  Component(transport, "RoomTransport", "WebTransport client", "Opens the HTTP/3 session and subscribes to room media")
+  Component(decoder, "MediaDecoder", "WebCodecs wrapper", "Decodes subscribed chunks into video and audio frames")
+}
+
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Resolves codes, admits subscribers, enforces capacity, relays media")
+ContainerDb(registry, "Room registry", "Ephemeral in-memory store", "Open rooms and their codes")
+
+Rel(joiner, dialog, "Enters a code or invite link in")
+Rel(dialog, resolver, "Resolves the input through")
+Rel(resolver, origin, "Resolves the room code with", "WebTransport / HTTP/3")
+Rel(origin, registry, "Looks up the code in")
+Rel(resolver, greenRoom, "Proceeds, on an open room, to")
+Rel(greenRoom, deviceSvc, "Previews the local feed via")
+Rel(greenRoom, primer, "Primes camera and microphone permission via")
+Rel(greenRoom, enter, "Enters the room through")
+Rel(primer, deviceSvc, "Triggers the native prompt via")
+Rel(enter, deviceSvc, "Acquires the selected devices from")
+Rel(enter, transport, "Subscribes through")
+Rel(enter, decoder, "Decodes frames with")
+Rel(transport, origin, "Subscribes to media from", "WebTransport")
+Rel(transport, decoder, "Hands encoded chunks to")
+@enduml

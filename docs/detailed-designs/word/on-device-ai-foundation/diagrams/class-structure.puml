@@ -1,0 +1,74 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — On-device intelligence foundation
+
+enum AiCapability {
+  Unsupported
+  Downloadable
+  Downloading
+  Ready
+}
+
+class AiCapabilityDetector {
+  +detect(): AiCapability
+}
+
+class CapabilityStore {
+  +current: AiCapability
+  +set(capability: AiCapability): void
+  +subscribe(listener: Function): void
+  +isReady(): boolean
+}
+
+class OnDeviceModel {
+  +availability(): AiCapability
+  +createSession(): PromptSession
+  +download(onProgress: Function): void
+  +remove(): void
+}
+
+class ModelDownloadController {
+  +start(onProgress: Function): void
+  +continueInBackground(): void
+}
+
+class DownloadProgress {
+  +bytesTotal: number
+  +bytesDone: number
+  +percent: number
+  +etaSeconds: number
+}
+
+class ModelManager {
+  +status(): ModelStatus
+  +recheck(): AiCapability
+  +remove(): void
+}
+
+class ModelStatus {
+  +ready: boolean
+  +sizeBytes: number
+}
+
+AiCapabilityDetector ..> OnDeviceModel : probes
+AiCapabilityDetector --> AiCapability : yields
+AiCapabilityDetector --> CapabilityStore : publishes to
+CapabilityStore --> AiCapability : holds
+ModelDownloadController --> OnDeviceModel : downloads via
+ModelDownloadController ..> DownloadProgress : reports
+ModelDownloadController --> CapabilityStore : updates
+ModelManager --> OnDeviceModel : re-checks / removes
+ModelManager ..> ModelStatus : reports
+ModelManager --> CapabilityStore : refreshes
+@enduml

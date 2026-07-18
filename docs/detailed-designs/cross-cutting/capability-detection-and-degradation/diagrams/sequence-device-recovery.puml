@@ -1,0 +1,50 @@
+@startuml
+title UML sequence behaviour — Device error and recovery
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Visitor" as visitor
+box "Frontend — Prayer client" #E0F2FE
+  participant "GoLiveController" as golive
+  participant "MediaDeviceService" as devices
+  participant "DeviceRecoveryResolver" as recovery
+end box
+
+visitor -> golive : Enter the gathering
+golive -> devices : Acquire selected camera and microphone
+
+alt Permission blocked (NotAllowedError)
+  devices --> golive : Throw NotAllowedError
+  golive -> recovery : resolve(error)
+  recovery --> golive : PermissionBlocked recovery state (L2-068)
+  golive --> visitor : Explain the address-bar re-allow steps; offer "Try again" and "Join with camera off" (L2-068)
+else Camera in use (NotReadableError)
+  devices --> golive : Throw NotReadableError
+  golive -> recovery : resolve(error)
+  recovery --> golive : DeviceInUse recovery state (L2-068)
+  golive --> visitor : Explain the conflict; offer "Try again" and "Join with camera off" (L2-068)
+else Devices acquired
+  devices --> golive : Local MediaStream
+  golive --> visitor : Proceed into the gathering
+end
+
+opt Visitor chooses "Join with camera off"
+  visitor -> golive : Join with camera off
+  golive -> recovery : joinWithCameraOff()
+  recovery -> devices : Acquire microphone only
+  devices --> recovery : Audio-only MediaStream
+  recovery --> golive : Audio-only stream
+  golive --> visitor : Joined audio-only; affirm a whispered prayer still counts (L2-068)
+end
+@enduml

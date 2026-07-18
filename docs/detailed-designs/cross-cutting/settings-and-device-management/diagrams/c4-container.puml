@@ -1,0 +1,19 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Settings and device management
+
+Person(person, "Person", "Configures devices and preferences")
+System_Ext(devices, "Media devices", "Camera, microphone, and speaker hardware")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — WebGPU, WebCodecs, Web Audio", "Settings surface and the live room")
+  ContainerDb(store, "LocalStore", "IndexedDB / localStorage", "On-device settings, journal, and saved passages; no server sync")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Admits publishers and subscribers; persists no media or settings")
+}
+
+Rel(person, spa, "Configures and saves preferences in", "HTTPS")
+Rel(spa, store, "Saves and loads settings in", "IndexedDB / localStorage")
+Rel(spa, devices, "Enumerates and tests via", "navigator.mediaDevices / Web Audio")
+Rel(spa, origin, "Applies the saved codec preference when next hosting or joining; sends no settings data", "WebTransport")
+@enduml

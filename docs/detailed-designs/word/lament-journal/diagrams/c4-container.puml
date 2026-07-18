@@ -1,0 +1,17 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Private lament journal
+
+Person(seeker, "Person at prayer", "Writes and reflects in the journal")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA", "Journal view, editor, and reflection panel; night register")
+  Container(model, "On-device model", "Browser Prompt API", "Generates reflections locally; wrapped by OnDeviceModel")
+  ContainerDb(store, "On-device store", "IndexedDB / localStorage", "Journal entries and kept reflections; origin-scoped and clearable; wrapped by LocalStore")
+}
+
+Rel(seeker, spa, "Writes, reflects, and saves in", "HTTPS app shell")
+Rel(spa, model, "Requests a gentle reflection from", "on-device; no network")
+Rel(spa, store, "Saves and lists entries in", "on-device; no network")
+@enduml

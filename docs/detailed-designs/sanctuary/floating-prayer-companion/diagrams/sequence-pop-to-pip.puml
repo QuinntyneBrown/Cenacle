@@ -1,0 +1,60 @@
+@startuml
+title UML sequence behaviour — Pop the gathering into a floating window
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Participant" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "RoomView" as roomView
+  participant "FloatingCompanionController" as controller
+  participant "PipView" as pipView
+  participant "RoomSession" as session
+  participant "RoomTransport" as transport
+end box
+box "Browser — Document Picture-in-Picture" #FFF4E5
+  participant "documentPictureInPicture" as dpip
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+
+end box
+
+person -> roomView : Open the floating companion
+roomView -> controller : pop(session)
+alt documentPictureInPicture unsupported
+  controller -> controller : isSupported() = false (L2-056)
+  controller --> roomView : Hide the option or show a clear message
+  roomView --> person : Full room continues unaffected (L2-056)
+else supported
+  controller -> dpip : requestWindow() (L2-056)
+  dpip --> controller : Always-on-top window
+  controller -> session : Read live stage, caption, latency, mute, camera
+  controller -> pipView : Render host stage and compact controls (L2-057)
+  pipView -> session : Bind caption line, latency, mute, and leave (L2-057)
+  note over session, origin : Live media session stays open — RoomTransport is never re-opened
+  pipView --> person : Floating gathering shown over other windows (L2-056)
+  opt Mute from the floating window (L2-057)
+    person -> pipView : Activate mute
+    pipView -> session : toggleMute()
+    session -> transport : Stop sending microphone frames
+    session --> pipView : Muted state reflected
+  end
+  opt Leave from the floating window (L2-057)
+    person -> pipView : Activate leave
+    pipView -> session : leave()
+    session -> origin : Stop media and depart the room (L2-028)
+    session --> person : Returned to the landing screen
+  end
+end
+@enduml

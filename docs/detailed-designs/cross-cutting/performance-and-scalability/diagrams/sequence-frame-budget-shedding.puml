@@ -1,0 +1,39 @@
+@startuml
+title UML sequence behaviour — Frame budget shedding
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+box "Frontend — Prayer client" #E0F2FE
+  participant "FrameScheduler" as scheduler
+  participant "MediaDecoder" as presence
+  participant "AudioAnalyser" as analyser
+  participant "SanctuaryRenderer" as sanctuary
+  participant "StillBackdrop" as backdrop
+end box
+
+scheduler -> scheduler : Begin frame, measure the ~16.7 ms frame budget (60fps)
+alt Frame budget exceeded (L2-078)
+  scheduler -> analyser : Reduce or disable audio-reactive work first
+  scheduler -> sanctuary : Reduce ambient quality
+  opt Budget still exceeded
+    scheduler -> sanctuary : Stop ambient rendering
+    scheduler -> backdrop : Swap in the still layer (L2-067)
+  end
+  scheduler -> presence : Render the presence frame, never dropped before non-essential work
+else Within the frame budget
+  scheduler -> presence : Render presence video
+  scheduler -> sanctuary : Render ambient visuals
+  scheduler -> analyser : Drive audio-reactive parameters
+end
+@enduml

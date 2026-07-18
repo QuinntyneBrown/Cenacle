@@ -1,0 +1,59 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Audio-reactive worship visuals
+
+class VisualsSettings {
+  +visualsEnabled: boolean
+  +audioReactiveEnabled: boolean
+  +reduceMotion: boolean
+  +audioReactiveActive(): boolean
+  +motionGain(): number
+}
+
+class AudioFrame {
+  +amplitude: number
+  +bands: number[]
+}
+
+class AudioAnalyser {
+  -analyserNode: AnalyserNode
+  +connect(source: AudioNode): void
+  +sample(): AudioFrame
+}
+
+class ShaderParams {
+  +amplitude: number
+  +bands: number[]
+  +motionGain: number
+}
+
+class SanctuaryRenderer {
+  -params: ShaderParams
+  +start(): void
+  +stop(): void
+  +renderFrame(): void
+}
+
+class StillBackdrop {
+  +show(): void
+  +hide(): void
+}
+
+SanctuaryRenderer --> VisualsSettings : reads
+SanctuaryRenderer --> AudioAnalyser : samples each frame
+SanctuaryRenderer *-- ShaderParams : owns
+SanctuaryRenderer --> StillBackdrop : shows when disabled
+AudioAnalyser ..> AudioFrame : produces
+SanctuaryRenderer ..> AudioFrame : folds into ShaderParams
+@enduml

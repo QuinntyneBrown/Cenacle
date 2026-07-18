@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Scripture surfaced: For fear</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* page-local layout only — all visual language comes from cenacle.css */
+  .backdrop{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .backdrop .container{padding-block:var(--sp-8)}
+  .backdrop .field{max-width:34rem}
+  .backdrop__verses{display:grid;gap:var(--sp-5);margin-top:var(--sp-7);opacity:.6}
+  .why{display:flex;gap:.55em;align-items:baseline}
+  .why svg{width:1.05em;height:1.05em;flex:none;color:var(--muted);transform:translateY(.15em)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ================= BACKDROP: the Scripture surfacing screen (simplified) ================= -->
+<div class="backdrop" aria-hidden="true">
+  <header class="topbar">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg>
+        Cenacle <small>upper room</small>
+      </a>
+      <span class="seal"><span class="seal__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="mono">0 requests</span></span>
+    </div>
+  </header>
+  <div class="container container-narrow">
+    <span class="eyebrow">Word · Scripture surfacing</span>
+    <h2 class="h2 mt-3">What are you carrying today?</h2>
+    <div class="field mt-5">
+      <label class="label">A word or a weight</label>
+      <div class="input">fear</div>
+    </div>
+    <div class="backdrop__verses">
+      <blockquote class="verse">When you pass through the waters, I will be with you.<span class="ref">Isaiah 43:2</span></blockquote>
+      <blockquote class="verse">The Lord is my light and my salvation — whom shall I fear?<span class="ref">Psalm 27:1</span></blockquote>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DIALOG ================= -->
+<div class="scrim">
+  <div class="dialog dialog--wide" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+    <div class="dialog__accent"></div>
+    <button class="dialog__close" aria-label="Close and surface later">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+
+    <div class="dialog__head">
+      <span class="eyebrow dialog__eyebrow">Surfaced for you</span>
+      <h2 class="dialog__title" id="dlg-title">For fear</h2>
+    </div>
+
+    <div class="dialog__body stack gap-5">
+      <blockquote class="verse sacred">
+        So do not fear, for I am with you; do not be dismayed, for I am your God. I will strengthen you and help you; I will uphold you with my righteous right hand.
+        <span class="ref">Isaiah 41:10</span>
+      </blockquote>
+
+      <p class="why muted small">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        <span>Matched from a local verse index — your word "fear" mapped to passages of comfort and courage. Chosen, not composed: this is a passage that already existed, surfaced to meet you.</span>
+      </p>
+
+      <div class="banner banner--sage">
+        <span class="glyph glyph--sage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <div>
+          <p class="banner__title">From a local verse index</p>
+          <p class="muted small">Nothing you typed left your device. <span class="mono">0 requests</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dialog__foot">
+      <button class="btn btn--quiet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
+        Save
+      </button>
+      <button class="btn btn--ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8a8 8 0 1 0 .8 6M20 4v4h-4"/></svg>
+        Surface another
+      </button>
+      <a class="btn btn--primary" href="scripture.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg>
+        Read in context
+      </a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

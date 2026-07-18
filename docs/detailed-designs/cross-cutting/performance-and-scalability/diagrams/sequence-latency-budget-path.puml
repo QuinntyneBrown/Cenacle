@@ -1,0 +1,51 @@
+@startuml
+title UML sequence behaviour — Latency budget path (capture to render)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Speaker" as speaker
+box "Frontend — Prayer client (publisher)" #E0F2FE
+  participant "MediaEncoder" as encoder
+  participant "RoomTransport" as pubtx
+end box
+box "Backend — Room origin" #D1FADF
+  participant "SmallRoomTopology" as topology
+end box
+box "Frontend — Prayer client (subscriber)" #E0F2FE
+  participant "RoomTransport" as subtx
+  participant "LatencyBudget" as budget
+  participant "MediaDecoder" as decoder
+  participant "LatencyMeter" as meter
+end box
+actor "Viewer" as viewer
+
+speaker -> encoder : Capture frame with capture timestamp
+encoder -> encoder : Encode with WebCodecs, low-latency config
+encoder -> pubtx : Encoded chunk
+pubtx -> topology : Publish over WebTransport / HTTP/3
+topology -> subtx : Relay within the one small room, no SFU fan-out (L2-079)
+subtx -> budget : Deliver chunk for the presence render
+alt Transient jitter present
+  budget -> decoder : Decode now, prioritize low latency over buffering (L2-077)
+  note right of budget : A late frame is dropped rather than buffered
+else Steady link
+  budget -> decoder : Decode on arrival
+end
+decoder -> viewer : Render on the frame callback
+meter -> meter : glassToGlass = renderTs - captureTs
+meter -> viewer : Surface the live latency readout (L2-013)
+opt Latency exceeds the reconnect threshold
+  budget -> subtx : Enter the reconnect flow (L2-030)
+end
+@enduml

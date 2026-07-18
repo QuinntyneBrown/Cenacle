@@ -1,0 +1,20 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Live captions
+
+Person(participant, "Participant", "Reads live captions in the room")
+
+System_Boundary(device, "Participant device") {
+  Container(spa, "Prayer client", "Browser SPA", "Caption UI and on-device transcription")
+  Container(runtime, "On-device model runtime", "Browser Prompt API", "On-device speech-to-text; no network egress")
+  ContainerDb(store, "On-device storage", "IndexedDB / localStorage", "Captions default and caption language")
+}
+
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Delivers live gathering audio for presence; no caption path")
+
+Rel(participant, spa, "Reads live captions in", "HTTPS")
+Rel(origin, spa, "Delivers live gathering audio to (presence)", "WebTransport / HTTP/3")
+Rel(spa, runtime, "Transcribes live audio on the device with", "in-process")
+Rel(spa, store, "Persists captions default and language in", "IndexedDB")
+@enduml

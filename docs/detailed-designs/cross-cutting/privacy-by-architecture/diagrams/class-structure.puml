@@ -1,0 +1,85 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Privacy by architecture
+
+enum WordActionKind {
+  Reflection
+  ScriptureMatch
+  Caption
+  JournalSave
+}
+
+enum Availability {
+  Ready
+  Unavailable
+}
+
+class WordAction {
+  +kind: WordActionKind
+  +run(): PrivateResult
+}
+
+class PrivateResult {
+  +content: string
+  +outboundRequests: number
+}
+
+class OnDeviceModel {
+  +availability(): Availability
+  +run(prompt: string): string
+}
+
+class LocalStore {
+  +read(key: string): string
+  +write(key: string, value: string): void
+  +clear(): void
+}
+
+class NetworkGuard {
+  +outboundCount(): number
+  +assertZeroEgress(action: WordAction): GuardResult
+}
+
+class GuardResult {
+  +requestCount: number
+  +passed: boolean
+}
+
+class ContentSecurityPolicy {
+  +connectSrc: string[]
+  +permits(origin: string): boolean
+}
+
+class PrivacySeal {
+  +requestCount: number
+  +render(): void
+}
+
+class PrivacyBoundary {
+  +encloses: string[]
+  +crosses(result: PrivateResult): boolean
+}
+
+WordAction --> WordActionKind : has
+WordAction ..> OnDeviceModel : runs on
+WordAction ..> LocalStore : reads / writes
+WordAction --> PrivateResult : produces
+OnDeviceModel --> Availability : reports
+NetworkGuard ..> WordAction : verifies
+NetworkGuard --> GuardResult : produces
+PrivacySeal ..> NetworkGuard : reads count from
+PrivacyBoundary o-- OnDeviceModel : encloses
+PrivacyBoundary o-- LocalStore : encloses
+ContentSecurityPolicy ..> PrivacyBoundary : constrains egress across
+@enduml

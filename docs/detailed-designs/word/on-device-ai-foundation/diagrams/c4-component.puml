@@ -1,0 +1,29 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — On-device intelligence foundation (Prayer client)
+
+Person(person, "Person", "Opens Cenacle and uses Word features")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(detector, "AiCapabilityDetector", "Client service", "Classifies on-device AI availability from Prompt API presence, model presence, and device capability")
+  Component(store, "CapabilityStore", "Reactive client store", "Holds and publishes the current capability so features gate without a page reload")
+  Component(downloadCtl, "ModelDownloadController", "Client controller", "Runs the one-time model download and reports size, percentage, and estimate")
+  Component(manager, "ModelManager", "Client service", "Reports model status and size; re-checks and removes the local model")
+  Component(model, "OnDeviceModel", "Prompt API wrapper", "Probes availability, downloads weights, and runs on-device language-model sessions")
+  Component(wordFeatures, "Word features", "Journal reflection, Scripture surfacing, captions", "Gated on CapabilityStore; hidden when on-device AI is unavailable")
+}
+
+System_Ext(browserAi, "Browser on-device AI", "Prompt API / local model runtime", "Downloads and runs the model on the device")
+
+Rel(person, detector, "Triggers detection on app init through")
+Rel(detector, model, "Probes availability through")
+Rel(detector, store, "Publishes the classification to")
+Rel(store, wordFeatures, "Enables or hides")
+Rel(downloadCtl, model, "Downloads the model through")
+Rel(downloadCtl, store, "Updates readiness in")
+Rel(manager, model, "Re-checks and removes the model via")
+Rel(manager, store, "Refreshes the classification in")
+Rel(wordFeatures, model, "Runs inference through")
+Rel(model, browserAi, "Creates sessions and downloads weights via", "Prompt API")
+@enduml

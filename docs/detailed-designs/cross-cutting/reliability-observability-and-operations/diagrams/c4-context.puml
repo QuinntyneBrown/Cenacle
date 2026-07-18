@@ -1,0 +1,14 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Reliability, observability, and operations
+
+Person(person, "Person in a gathering", "Hosts or joins; always sees a defined state, never a blank screen")
+Person(operator, "Operator", "Runs Cenacle and responds to origin-availability alerts")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; fails safely and reports non-identifying operational signals")
+System_Ext(monitoring, "Monitoring & alerting", "Receives operational signals and origin-availability checks; pages the operator")
+
+Rel(person, cenacle, "Uses; on any failure sees a defined state", "HTTPS / WebTransport")
+Rel(cenacle, monitoring, "Emits non-identifying operational signals to (no private content)")
+Rel(monitoring, operator, "Alerts on origin unavailability")
+@enduml

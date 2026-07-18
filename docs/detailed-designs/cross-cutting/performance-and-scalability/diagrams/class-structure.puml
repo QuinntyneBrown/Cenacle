@@ -1,0 +1,76 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Performance and scalability
+
+enum WorkClass {
+  Presence
+  Ambient
+  AudioReactive
+}
+
+enum BudgetVerdict {
+  WithinBudget
+  Exceeded
+}
+
+class LatencySample {
+  +captureTs: number
+  +renderTs: number
+  +glassToGlassMs: number
+}
+
+class LatencyMeter {
+  +measure(captureTs: number, renderTs: number): LatencySample
+  +readout(): string
+  +placeholder(): string
+}
+
+class LatencyBudget {
+  +targetMs: number
+  +prioritizeLowLatency: boolean
+  +evaluate(sample: LatencySample): BudgetVerdict
+}
+
+class RenderTask {
+  +workClass: WorkClass
+  +essential: boolean
+  +run(): void
+}
+
+class FrameScheduler {
+  +frameBudgetMs: number
+  +schedule(tasks: RenderTask[]): void
+  +shedNonEssential(): void
+}
+
+class LoadStrategy {
+  +ttiBudgetMs: number
+  +firstPaint(): void
+  +deferModelDownload(): void
+  +deferGpuInit(): void
+}
+
+class SmallRoomTopology {
+  +capacity: number
+  +usesSfu: boolean
+  +admit(present: number): boolean
+  +relay(chunk: EncodedChunk): void
+}
+
+LatencyMeter --> LatencySample : produces
+LatencyBudget ..> LatencySample : evaluates
+LatencyBudget --> BudgetVerdict : yields
+FrameScheduler "1" --> "*" RenderTask : schedules
+RenderTask --> WorkClass : classified by
+@enduml

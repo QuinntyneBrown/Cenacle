@@ -1,0 +1,36 @@
+@startuml
+title UML sequence behaviour — Live media relayed without recording
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Host" as host
+box "Frontend — Prayer client" #E0F2FE
+  participant "Setup / Green room" as setup
+  participant "RoomTransport" as transport
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+  participant "Room registry" as registry
+end box
+
+host -> setup : Open host setup
+setup --> host : State that nothing is recorded (L2-071)
+host -> transport : Publish live presence media
+transport -> origin : Relay encoded frames (WebTransport / HTTP/3)
+origin -> registry : Read ephemeral room state
+registry --> origin : Room membership
+origin -> origin : Fan out to subscribers without persisting (L2-071)
+origin --> transport : Relayed; no server-side recording or archival (L2-071)
+note over origin, registry : The Room origin holds only ephemeral room state; no VOD or recording capability exists in v1 (L2-071)
+@enduml

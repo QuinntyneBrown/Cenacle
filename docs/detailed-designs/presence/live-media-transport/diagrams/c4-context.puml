@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Live media transport
+
+Person(publisher, "Publishing participant", "Captures and publishes their own audio and video")
+Person(subscriber, "Subscribing participant", "Sees and hears the other participants in the room")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; captures, encodes, transports, decodes, and renders presence")
+
+Rel(publisher, cenacle, "Publishes captured presence through", "WebTransport / HTTP/3")
+Rel(subscriber, cenacle, "Sees and hears others through", "WebTransport / HTTP/3")
+@enduml

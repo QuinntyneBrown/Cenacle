@@ -1,0 +1,74 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Floating prayer companion
+
+enum CompanionState {
+  Docked
+  Floating
+  Unsupported
+}
+
+class FloatingCompanionController {
+  +state: CompanionState
+  +isSupported(): boolean
+  +pop(session: RoomSession): PipWindow
+  +returnToTab(): void
+  +onWindowClosed(): void
+}
+
+class PipWindow {
+  +window: Window
+  +close(): void
+}
+
+class PipView {
+  +captionLine: string
+  +latencyMs: number
+  +muted: boolean
+  +render(session: RoomSession): void
+  +toggleMute(): void
+  +leave(): void
+}
+
+class RoomSession {
+  +roster: Participant[]
+  +muted: boolean
+  +cameraOn: boolean
+  +latencyMs: number
+  +captionLine: string
+  +isConnected(): boolean
+  +toggleMute(): void
+  +leave(): void
+}
+
+class RoomTransport {
+  +isConnected(): boolean
+  +send(chunk: EncodedChunk): void
+}
+
+class Participant {
+  +id: string
+  +displayName: string
+  +isHost: boolean
+  +muted: boolean
+}
+
+FloatingCompanionController --> CompanionState : has
+FloatingCompanionController ..> RoomSession : reads
+FloatingCompanionController --> PipWindow : opens
+FloatingCompanionController --> PipView : renders
+PipView ..> RoomSession : reads and commands
+RoomSession --> RoomTransport : uses
+RoomSession "1" --> "*" Participant : tracks
+@enduml

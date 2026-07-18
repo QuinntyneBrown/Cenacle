@@ -1,0 +1,15 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Ambient sanctuary visuals
+
+Person(person, "Person in the gathering", "Sees the ambient sanctuary behind the stage")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — WebGPU, Web Audio", "Renders the ambient sanctuary behind the presence stage")
+  ContainerDb(store, "On-device store", "IndexedDB / localStorage", "Persists the ambient-visuals toggle on the device; no server sync")
+}
+
+Rel(person, spa, "Sees the ambient sanctuary in", "HTTPS")
+Rel(spa, store, "Reads and writes the visuals toggle in", "LocalStore")
+@enduml

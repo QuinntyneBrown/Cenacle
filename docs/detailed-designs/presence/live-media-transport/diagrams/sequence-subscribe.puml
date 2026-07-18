@@ -1,0 +1,55 @@
+@startuml
+title UML sequence behaviour — Subscribe, decode, and render
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Subscribing participant" as sub
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+box "Frontend — Prayer client" #E0F2FE
+  participant "RoomTransport" as transport
+  participant "MediaDecoder" as decoder
+  participant "FrameRenderer" as renderer
+  participant "LatencyMeter" as latency
+  participant "ActiveSpeakerDetector" as detector
+end box
+
+transport -> origin : Subscribe to a remote participant's stream (L2-012)
+loop each remote chunk
+  origin --> transport : EncodedChunk
+  transport -> decoder : Deliver remote chunk
+  decoder -> decoder : Decode with WebCodecs (L2-012)
+  decoder -> renderer : VideoFrame / AudioData
+  renderer -> renderer : Render on per-frame callback (L2-012)
+  renderer -> latency : Report render timestamp (L2-013)
+  latency -> latency : Derive glass-to-glass estimate (target < 400 ms)
+  alt Measurement available
+    latency --> sub : Show readout, e.g. 312 ms (L2-013)
+  else Measurement missing
+    latency --> sub : Show placeholder, e.g. — ms (L2-013)
+  end
+  decoder -> detector : Decoded audio level
+  alt Level crosses speaking threshold
+    detector -> renderer : Mark tile as speaking (L2-015)
+  else Muted or below threshold
+    detector -> renderer : Clear speaking indication (L2-015)
+  end
+  alt Remote camera on
+    renderer --> sub : Render remote video tile
+  else Remote camera off or stream ended
+    renderer --> sub : Show camera-off tile (L2-012)
+  end
+end
+@enduml

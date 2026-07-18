@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Ambient sanctuary visuals
+
+Person(person, "Person in the gathering", "Sees the ambient sanctuary behind the live stage")
+Person(host, "Host", "Enables or disables ambient visuals at setup")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; renders the ambient sanctuary on-device")
+
+Rel(person, cenacle, "Sees the ambient sanctuary in", "HTTPS")
+Rel(host, cenacle, "Toggles ambient visuals in", "HTTPS")
+@enduml

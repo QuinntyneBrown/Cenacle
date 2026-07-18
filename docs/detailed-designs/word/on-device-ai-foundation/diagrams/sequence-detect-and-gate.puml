@@ -1,0 +1,46 @@
+@startuml
+title UML sequence behaviour — Detect and gate on-device AI
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "App init" as app
+  participant "AiCapabilityDetector" as detector
+  participant "OnDeviceModel" as model
+  participant "CapabilityStore" as store
+  participant "Word features" as gate
+end box
+box "On-device — Browser AI runtime (Prompt API)" #FFF4E5
+  participant "Prompt API runtime" as runtime
+end box
+
+person -> app : Open Cenacle
+app -> detector : detect()
+detector -> model : availability()
+model -> runtime : Query Prompt API and device capability (no private content) (L2-049)
+runtime --> model : Prompt API present, model present, device capable
+model --> detector : AiCapability
+detector -> store : publish(capability) (L2-049)
+alt Unsupported — no Prompt API or device incapable
+  store -> gate : Hide reflections, Scripture, captions with an explanation (L2-066)
+  gate --> person : Word features hidden; presence still works, nothing rerouted
+else Ready — model present and capable
+  store -> gate : Enable Word features (L2-049)
+  gate --> person : Reflections, Scripture, captions available
+else Downloadable — available, model absent
+  store -> gate : Offer the one-time download (L2-050)
+  gate --> person : Prompt to enable on-device intelligence
+end
+@enduml

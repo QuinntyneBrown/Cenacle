@@ -1,0 +1,55 @@
+@startuml
+title UML sequence behaviour — Join by room code
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Joiner" as joiner
+box "Frontend — Prayer client" #E0F2FE
+  participant "JoinDialog" as dialog
+  participant "RoomResolver" as resolver
+  participant "GreenRoomView" as greenroom
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+box "Backend — Room registry" #FFF4E5
+  database "Room registry" as registry
+end box
+
+joiner -> dialog : Enter a room code or paste an invite link
+dialog -> dialog : Limit to six characters, auto-capitalize (L2-006)
+joiner -> dialog : Submit
+dialog -> resolver : resolve(input)
+resolver -> resolver : Extract code from a .../r/{CODE} link or take the entered code (L2-007)
+resolver -> resolver : Normalize to uppercase, validate six-character format (L2-006)
+alt Code not six characters
+  resolver --> dialog : Reject, show six-character hint (L2-006)
+  dialog --> joiner : Prompt for a valid code
+else Well-formed code
+  resolver -> origin : Resolve room by code
+  origin -> registry : Look up open room by code (L2-072)
+  alt No open room for code
+    registry --> origin : No match
+    origin --> resolver : Room not open
+    resolver --> dialog : Show "room not found" state (L2-032)
+    dialog --> joiner : Explain the room may have ended or been mistyped
+  else Room open
+    registry --> origin : Room found, open
+    origin --> resolver : Room reference, open
+    resolver --> greenroom : Proceed to the green room (L2-006)
+    greenroom --> joiner : Present self-preview and pre-join configuration (L2-008)
+  end
+end
+@enduml

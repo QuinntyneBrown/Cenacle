@@ -1,0 +1,63 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Host a live gathering
+
+enum CodecPreference {
+  H264
+  VP9
+}
+
+class GatheringSetup {
+  +name: string
+  +cameraId: string
+  +microphoneId: string
+  +captionsEnabled: boolean
+  +visualsEnabled: boolean
+  +hasValidName(): boolean
+}
+
+class MediaDeviceService {
+  +enumerate(): DeviceInfo[]
+  +acquire(cameraId: string, microphoneId: string): MediaStream
+}
+
+class MediaEncoder {
+  +codec: CodecPreference
+  +configure(): void
+  +encode(frame: VideoFrame): EncodedChunk
+}
+
+class RoomTransport {
+  +open(url: string): void
+  +publish(chunk: EncodedChunk): void
+  +close(): void
+}
+
+class GoLiveController {
+  +goLive(setup: GatheringSetup): Room
+}
+
+class Room {
+  +code: string
+  +role: string
+}
+
+GoLiveController ..> GatheringSetup : reads
+GoLiveController --> MediaDeviceService : uses
+GoLiveController --> MediaEncoder : uses
+GoLiveController --> RoomTransport : uses
+GoLiveController --> Room : produces
+MediaEncoder --> CodecPreference : has
+MediaEncoder ..> RoomTransport : hands chunks to
+@enduml

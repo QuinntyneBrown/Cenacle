@@ -1,0 +1,19 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Security and data protection
+
+Person(person, "Person joining a gathering", "Enters user text and presents a room credential")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA", "Renders user text as inert; ships a strict CSP; scopes local data to the origin")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Authenticates the transport, validates the room credential, authorizes and rate-limits room access; persists no media")
+  ContainerDb(registry, "Room registry", "Ephemeral in-memory store", "Open rooms and their high-entropy codes (L2-027); no media persisted")
+  ContainerDb(localStore, "LocalStore", "Origin-scoped IndexedDB / localStorage", "Journal, saved passages, recent themes, settings; clearable by the person")
+}
+
+Rel(person, spa, "Enters text and joins in", "HTTPS")
+Rel(spa, origin, "Joins with a room credential over", "WebTransport / HTTP/3 (TLS)")
+Rel(origin, registry, "Validates the room credential against")
+Rel(spa, localStore, "Reads, writes, and clears origin-scoped private data in")
+@enduml

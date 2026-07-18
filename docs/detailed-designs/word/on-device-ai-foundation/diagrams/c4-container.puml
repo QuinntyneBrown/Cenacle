@@ -1,0 +1,18 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — On-device intelligence foundation
+
+Person(person, "Person", "Uses Cenacle's Word features")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — Prompt API, WebGPU, IndexedDB", "Word features and the on-device intelligence foundation")
+  ContainerDb(localstore, "On-device storage", "IndexedDB / localStorage", "Settings and preferences; clearable by the person; no private content transmitted")
+}
+
+System_Ext(browserAi, "Browser on-device AI", "Prompt API / local model runtime", "Downloads and runs the model on the device")
+
+Rel(person, spa, "Uses Word features in", "HTTPS")
+Rel(spa, browserAi, "Feature-detects, downloads, and runs the model via", "Prompt API (on-device)")
+Rel(spa, localstore, "Reads and writes settings in", "IndexedDB")
+@enduml

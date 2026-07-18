@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Host a live gathering
+
+Person(host, "Host", "Opens a gathering and broadcasts from a single browser tab")
+Person(participant, "Participant", "Joins the gathering the host opens")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; captures, encodes, and publishes presence")
+
+Rel(host, cenacle, "Names a gathering and goes live using", "HTTPS / WebTransport")
+Rel(participant, cenacle, "Joins the gathering hosted in", "HTTPS / WebTransport")
+@enduml

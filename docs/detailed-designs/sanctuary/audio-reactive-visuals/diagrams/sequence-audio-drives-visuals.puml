@@ -1,0 +1,57 @@
+@startuml
+title UML sequence behaviour — Audio drives the sanctuary visuals
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Participant" as participant
+box "Frontend — Prayer client" #E0F2FE
+  participant "SanctuaryRenderer" as renderer
+  participant "VisualsSettings" as settings
+  participant "AudioAnalyser" as analyser
+  participant "In-room audio output" as audioOut
+  participant "ShaderParams" as params
+  participant "StillBackdrop" as still
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+
+origin -> audioOut : Relay live in-room audio (worship audio)
+participant -> renderer : Enter the room; sanctuary shown
+renderer -> settings : Read visualsEnabled, audioReactiveEnabled, reduceMotion
+alt Ambient visuals off (visualsEnabled == false)
+  renderer -> still : Show calm static background (L2-055)
+  still --> participant : Still sanctuary, no audio-driven motion
+else Ambient visuals on (visualsEnabled == true)
+  renderer -> analyser : connect(in-room audio output) — no network request (L2-054)
+  analyser -> audioOut : Tap live audio via AnalyserNode
+  loop Each rendered frame
+    renderer -> settings : audioReactiveActive() and motionGain()
+    alt Audio-reactive on (audioReactiveEnabled == true)
+      renderer -> analyser : sample()
+      analyser --> renderer : AudioFrame (amplitude, frequency bands)
+      alt Reduce-motion set
+        renderer -> params : Fold minimized audio contribution (L2-055)
+      else Reduce-motion clear
+        renderer -> params : Fold amplitude and frequency bands (L2-054)
+      end
+      renderer -> renderer : renderFrame() from ShaderParams — responds in real time (L2-054)
+      renderer --> participant : Sanctuary moves with the music
+    else Audio-reactive off (audioReactiveEnabled == false)
+      renderer -> renderer : renderFrame() without audio-driven motion (L2-055)
+      renderer --> participant : Ambient sanctuary, no audio reaction
+    end
+  end
+end
+@enduml

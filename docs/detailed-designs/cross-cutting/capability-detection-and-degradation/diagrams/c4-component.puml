@@ -1,0 +1,32 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Capability detection and graceful degradation (Prayer client)
+
+Person(visitor, "Visitor", "Opens Cenacle and is shown only what the browser supports")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(detector, "CapabilityDetector", "Client service", "Probes WebTransport, WebCodecs, WebGPU, and the Prompt API at init and produces a CapabilityReport")
+  Component(policy, "DegradationPolicy", "Client policy", "Maps the report to per-feature decisions: enable, hide, or substitute — never reroute")
+  Component(matrix, "SupportMatrixView", "UI view", "Renders the per-capability support matrix and summary count")
+  Component(recovery, "DeviceRecoveryResolver", "Client service", "Maps camera and microphone acquisition errors to recovery states")
+  Component(golive, "GoLiveController", "Client controller", "Presence entry; gated by the presence decision")
+  Component(model, "OnDeviceModel", "Prompt API wrapper", "Word intelligence; enabled or hidden by the Word decision")
+  Component(renderer, "SanctuaryRenderer", "WebGPU renderer", "Ambient backdrop; used when WebGPU is present")
+  Component(still, "StillBackdrop", "Reduced layer", "Calm static backdrop; substituted when WebGPU is absent")
+}
+
+System_Ext(browser, "Web browser platform", "WebTransport, WebCodecs, WebGPU, Prompt API")
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Presence transport")
+
+Rel(visitor, matrix, "Reads the support matrix in")
+Rel(detector, browser, "Feature-detects, sending no private content (L2-064)")
+Rel(detector, policy, "Hands the CapabilityReport to")
+Rel(detector, matrix, "Supplies the report for the support matrix (L2-064)")
+Rel(policy, golive, "Enables presence, or blocks entry when WebTransport or WebCodecs is absent (L2-065)")
+Rel(policy, model, "Enables Word, or hides it when the Prompt API is absent — issues no cloud request (L2-066)")
+Rel(policy, renderer, "Selects the WebGPU backdrop when present (L2-067)")
+Rel(policy, still, "Substitutes the still backdrop when WebGPU is absent (L2-067)")
+Rel(golive, recovery, "Resolves device acquisition errors through (L2-068)")
+Rel(golive, origin, "Publishes and subscribes when presence is enabled", "WebTransport")
+@enduml

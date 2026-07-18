@@ -1,0 +1,51 @@
+@startuml
+title UML sequence behaviour — Transcribe and display live captions
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Speaker" as speaker
+actor "Participant (reader)" as reader
+box "Frontend — Prayer client" #E0F2FE
+  participant "CaptionController" as controller
+  participant "OnDeviceTranscriber" as transcriber
+  participant "CaptionOverlay" as overlay
+  participant "LiveRegionAnnouncer" as announcer
+end box
+box "On-device — browser runtime and storage" #FFF4E5
+  participant "OnDeviceModel (Prompt API)" as model
+  database "LocalStore" as store
+end box
+
+reader -> controller : Enter room with captions on, seeded from stored default (L2-048)
+controller -> store : Read captions default and caption language (L2-047, L2-048)
+store --> controller : captionsOn, language
+controller -> model : Check on-device availability (L2-049)
+alt On-device model available
+  model --> controller : Available
+  speaker -> controller : Speaks; live gathering audio present on the device
+  controller -> transcriber : Push live audio frames in the target language (L2-047)
+  transcriber -> model : Run on-device speech-to-text, no network (L2-045, L2-070)
+  model --> transcriber : Incremental hypothesis, then finalized segment
+  transcriber --> controller : In-progress tail, then finalized text with speaker attribution (L2-046)
+  controller -> overlay : Render finalized text and in-progress tail attributed to the speaker, legible over video (L2-046)
+  overlay --> reader : Captions shown over the stage
+  controller -> announcer : Update the caption live region (L2-083)
+  announcer --> reader : Assistive technology announces the caption (L2-083)
+else On-device model unavailable
+  model --> controller : Unavailable (L2-049)
+  controller -> overlay : Hide captions, no cloud transcriber (L2-045, L2-066)
+  overlay --> reader : Captions hidden; presence continues
+  note over controller, model : Zero audio or transcript egress; no server fallback (L2-070)
+end
+@enduml

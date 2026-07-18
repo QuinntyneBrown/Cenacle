@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Scripture surfacing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* page-local layout only — all visual language comes from cenacle.css */
+  .search-row{display:grid;gap:var(--sp-3)}
+  @media(min-width:560px){.search-row{grid-template-columns:1fr auto;align-items:stretch}}
+  .search-row .input{font-size:1.1rem;padding:1em 1.15em}
+  .recent-list{list-style:none;padding:0;margin:0}
+  .recent-list li{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-4);padding-block:var(--sp-3);border-bottom:1px solid var(--hairline)}
+  .recent-list li:last-child{border-bottom:0}
+  .recent-list .theme{font-weight:500;color:var(--text)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ================= TOP BAR ================= -->
+<header class="topbar">
+  <div class="container">
+    <a class="brand" href="index.html">
+      <svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg>
+      Cenacle <small>upper room</small>
+    </a>
+    <nav class="hide-sm">
+      <a href="room-participant.html">Presence</a>
+      <a href="scripture.html">Word</a>
+      <a href="journal.html">Journal</a>
+      <a href="settings.html">Settings</a>
+    </nav>
+    <div class="cluster gap-3">
+      <span class="seal"><span class="seal__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="mono">on-device</span></span>
+    </div>
+  </div>
+</header>
+
+<!-- ================= SCRIPTURE SURFACING (B1) ================= -->
+<main class="section">
+  <div class="container container-narrow stack gap-6">
+
+    <!-- Prompt -->
+    <div class="stack gap-4">
+      <span class="eyebrow">Subsystem B · Word</span>
+      <h1 class="h1">What's on your heart?</h1>
+      <p class="lede">Name a theme in plain words — what you're carrying, or what you're grateful for — and a fitting passage surfaces. No searching, no scrolling. Just say it the way you'd say it out loud.</p>
+    </div>
+
+    <!-- Search -->
+    <form class="field" onsubmit="return false">
+      <label class="label" for="theme">Name a theme</label>
+      <div class="search-row">
+        <input class="input" id="theme" type="text" value="fear" placeholder="fear · gratitude for provision · waiting…" aria-label="Name a theme on your heart">
+        <button class="btn btn--primary" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z"/></svg>
+          Surface a passage
+        </button>
+      </div>
+      <p class="hint">Or start from one of these:</p>
+      <div class="cluster gap-2">
+        <button class="pill pill--accent" type="button">fear</button>
+        <button class="pill" type="button">gratitude</button>
+        <button class="pill" type="button">waiting</button>
+        <button class="pill" type="button">forgiveness</button>
+        <button class="pill" type="button">grief</button>
+        <button class="pill" type="button">provision</button>
+      </div>
+    </form>
+
+    <!-- Result -->
+    <div class="verse-card stack gap-4">
+      <span class="tag">Surfaced for “fear”</span>
+      <blockquote class="verse sacred">
+        Do not fear, for I am with you; do not be dismayed, for I am your God. I will strengthen you and help you; I will uphold you with my righteous right hand.
+        <span class="ref">Isaiah 41:10</span>
+      </blockquote>
+      <p class="small muted">Why this surfaced — matched against a local verse index on your device. Passages are retrieved, never generated, so what you read is grounded in the text itself.</p>
+      <div class="cluster gap-3">
+        <button class="btn btn--ghost" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8a8 8 0 1 0 .8 6M20 4v4h-4"/></svg>
+          Surface another
+        </button>
+        <button class="btn btn--quiet" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg>
+          Read in context
+        </button>
+        <button class="btn btn--quiet" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
+          Save
+        </button>
+      </div>
+    </div>
+
+    <!-- Privacy banner -->
+    <div class="banner banner--sage">
+      <span class="glyph glyph--sage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      <div>
+        <p class="banner__title">Grounded in a local verse index</p>
+        <p class="muted small">Nothing you type leaves your device. The index and the matching both live here, so a theme you'd never type into a cloud app is safe to name.</p>
+      </div>
+    </div>
+
+    <!-- Recent -->
+    <section class="stack gap-3">
+      <h2 class="h3">Recent</h2>
+      <ul class="recent-list">
+        <li><span class="theme">provision</span> <span class="mono small muted">jul 16</span></li>
+        <li><span class="theme">waiting</span> <span class="mono small muted">jul 14</span></li>
+        <li><span class="theme">gratitude for provision</span> <span class="mono small muted">jul 11</span></li>
+        <li><span class="theme">forgiveness</span> <span class="mono small muted">jul 07</span></li>
+      </ul>
+    </section>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container between" style="flex-wrap:wrap;gap:var(--sp-4)">
+    <a class="brand" href="index.html" style="font-size:1rem"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg> Cenacle</a>
+    <p class="small muted">Passages are illustrative. Read slowly; let the text speak.</p>
+    <nav class="cluster gap-4 small"><a href="index.html">All screens</a><a href="journal.html">Journal</a><a href="settings.html">Settings</a></nav>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Corporate reactions (Prayer client)
+
+Person(participant, "Participant", "Sends an amen / raised hand and sees the room respond")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(control, "ReactionControl", "UI control", "In-room amen / raised-hand button; keyboard-operable with an accessible label")
+  Component(sender, "ReactionSender", "Client sender", "Serializes a reaction and sends it as a WebTransport datagram; client-side rate-limits repeats")
+  Component(transport, "RoomTransport", "WebTransport client", "Shared HTTP/3 session; carries reaction datagrams alongside media")
+  Component(receiver, "ReactionReceiver", "Client receiver", "Reads inbound reaction datagrams and dispatches them")
+  Component(motes, "MoteRenderer", "UI renderer", "Surfaces each reaction as a rising mote; aggregates bursts; honors reduced-motion")
+  Component(counter, "ReactionCounter", "Client aggregator", "Maintains a rolling 60 s reaction count")
+}
+
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Fans out reaction datagrams to the room")
+
+Rel(participant, control, "Sends a reaction in")
+Rel(control, sender, "Invokes")
+Rel(sender, transport, "Sends the reaction datagram through")
+Rel(transport, origin, "Sends reaction datagrams to", "WebTransport")
+Rel(origin, transport, "Fans out reaction datagrams to", "WebTransport")
+Rel(receiver, transport, "Reads inbound reaction datagrams from")
+Rel(receiver, motes, "Forwards each reaction to")
+Rel(receiver, counter, "Records each reaction in")
+@enduml

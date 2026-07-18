@@ -1,0 +1,16 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Corporate reactions ("Amen")
+
+Person(participant, "Participant", "Sends a reaction and sees reactions from the room")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — WebTransport", "Sends reaction datagrams and surfaces reactions as ambient motes")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Fans out reaction datagrams to the room; persists no media")
+}
+
+Rel(participant, spa, "Sends amen / raised hand and sees reactions in", "HTTPS")
+Rel(spa, origin, "Sends reaction datagrams to", "WebTransport datagram / HTTP/3")
+Rel(origin, spa, "Fans out reaction datagrams to every participant's", "WebTransport datagram / HTTP/3")
+@enduml

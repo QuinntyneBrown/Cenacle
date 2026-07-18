@@ -1,0 +1,30 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Room lifecycle and resilience (Prayer client)
+
+Person(participant, "Participant", "Leaves, ends (as host), or reconnects")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(lifecycle, "RoomLifecycleController", "Client controller", "Coordinates leave, end, reconnect, and join-refusal states")
+  Component(leaveDlg, "LeaveDialog", "UI dialog", "Confirms a participant leaving; states rejoin while open")
+  Component(endDlg, "EndDialog", "UI dialog (destructive)", "Confirms the host ending the gathering for everyone")
+  Component(overlay, "ReconnectOverlay", "UI overlay", "Shows retry attempts and last latency; offers Leave")
+  Component(fullState, "RoomFullState", "UI state", "Explains a full room; offers Try again and Host a room")
+  Component(notFoundState, "RoomNotFoundState", "UI state", "Explains a room that is not open; offers recovery")
+  Component(transport, "RoomTransport", "WebTransport client", "Detects drops, pauses outbound media, and retries the session")
+}
+
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Closes rooms, enforces capacity, and resolves codes")
+ContainerDb(registry, "Room registry", "Ephemeral in-memory store", "Open rooms and their codes")
+
+Rel(participant, lifecycle, "Drives lifecycle actions through")
+Rel(lifecycle, leaveDlg, "Confirms leaving via")
+Rel(lifecycle, endDlg, "Confirms ending via")
+Rel(lifecycle, overlay, "Shows reconnection progress in")
+Rel(lifecycle, fullState, "Shows a full room via")
+Rel(lifecycle, notFoundState, "Shows an unavailable room via")
+Rel(lifecycle, transport, "Signals leave and end and reconnects through")
+Rel(transport, origin, "Closes, reconnects, and joins over", "WebTransport")
+Rel(origin, registry, "Frees or looks up codes in")
+@enduml

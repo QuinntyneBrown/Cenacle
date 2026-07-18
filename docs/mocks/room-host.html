@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Vespers · live (host)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  html,body{height:100%}
+  .app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .app__bar{flex:none;border-bottom:1px solid var(--hairline);background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(12px)}
+  .app__bar .inner{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);height:60px;padding-inline:var(--sp-5)}
+  .app__body{flex:1;display:grid;grid-template-columns:1fr;min-height:0}
+  @media(min-width:960px){.app__body{grid-template-columns:1fr 320px}}
+  .stagewrap{position:relative;min-height:0;padding:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-4)}
+  .stage-main{position:relative;flex:1;min-height:0;border-radius:var(--r-xl);overflow:hidden;border:1px solid var(--border);background:linear-gradient(160deg,#13273c,#0a1420);box-shadow:var(--shadow-lg)}
+  .stage-main .glow{position:absolute;inset:0;background:radial-gradient(55% 65% at 50% 34%,rgba(228,146,58,.22),transparent 72%);animation:breathe 11s var(--ease) infinite}
+  .host-fill{position:absolute;inset:0;background:radial-gradient(120% 120% at 40% 20%,#28405a,#0c1a29)}
+  .filmstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-3)}
+  .filmstrip .tile{aspect-ratio:16/10}
+  .rail{border-left:1px solid var(--hairline);padding:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-4);overflow:auto}
+  @media(max-width:960px){.rail{display:none}}
+  .dock-wrap{position:absolute;left:50%;bottom:calc(var(--sp-5) + 84px);transform:translateX(-50%);z-index:20}
+  .cap-wrap{position:absolute;left:50%;bottom:var(--sp-5);transform:translateX(-50%);width:min(64ch,90%);z-index:15}
+  .plist{display:flex;flex-direction:column;gap:.4rem}
+  .prow{display:flex;align-items:center;gap:.7em;padding:.5em .6em;border-radius:var(--r-sm)}
+  .prow:hover{background:var(--surface-2)}
+  .pav{width:2rem;height:2rem;border-radius:50%;background:linear-gradient(140deg,#2a405a,#14243a);display:grid;place-items:center;font-weight:600;font-size:.8rem;flex:none;color:var(--text)}
+  .motes{position:absolute;right:var(--sp-6);bottom:120px;z-index:16;width:60px;height:180px}
+  .motes span{position:absolute;bottom:0;font-size:1.3rem}
+  .motes span:nth-child(1){left:6px;animation:rise-fade 3.2s var(--ease) infinite}
+  .motes span:nth-child(2){left:28px;animation:rise-fade 3.2s var(--ease) .9s infinite}
+  .motes span:nth-child(3){left:14px;animation:rise-fade 3.2s var(--ease) 1.9s infinite}
+</style>
+</head>
+<body class="night">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<div class="app">
+  <!-- ===== BAR ===== -->
+  <header class="app__bar">
+    <div class="inner">
+      <div class="cluster gap-4">
+        <a class="brand" href="index.html" style="font-size:1.05rem"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg></a>
+        <span class="rule" style="width:1px;height:24px"></span>
+        <div>
+          <div class="cluster gap-2"><strong>Vespers</strong><span class="pill"><span class="dot dot--live"></span> Live</span></div>
+        </div>
+      </div>
+      <div class="cluster gap-3">
+        <span class="pill"><span class="mono">312&thinsp;ms</span> · 7 present</span>
+        <span class="seal"><span class="seal__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span> <span class="mono">on-device</span></span>
+        <a class="btn btn--primary btn--sm" href="dialog-invite.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg> Invite
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== BODY ===== -->
+  <div class="app__body">
+    <!-- stage -->
+    <div class="stagewrap">
+      <div class="stage-main">
+        <div class="glow"></div>
+        <div class="host-fill"></div>
+        <span class="tile__name" style="left:var(--sp-4);bottom:var(--sp-4);font-size:.95rem"><span class="dot dot--ember"></span> Pastor Ade · <span class="mono" style="font-size:.75rem">you</span></span>
+        <span class="tile__badge" style="top:var(--sp-4);right:var(--sp-4)"><span class="pill pill--accent"><span class="dot dot--live"></span> Speaking</span></span>
+
+        <!-- floating amen motes -->
+        <div class="motes" aria-hidden="true"><span>🔥</span><span>🙌</span><span>🔥</span></div>
+
+        <!-- captions (B3) -->
+        <div class="cap-wrap">
+          <div class="captions">
+            <p class="cap-speaker">Pastor Ade · live caption</p>
+            <p class="cap-text">Come, Holy Spirit — fill this room as you filled the first. <span class="live">Make us one as we…</span></p>
+          </div>
+        </div>
+
+        <!-- control dock -->
+        <div class="dock-wrap">
+          <div class="dock">
+            <div class="tc"><button class="control" aria-label="Mute microphone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/></svg></button><div class="control__label">Mic</div></div>
+            <div class="tc"><button class="control" aria-label="Stop camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 10l4.5-2.6v9.2L15 14M4 7h9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/></svg></button><div class="control__label">Camera</div></div>
+            <div class="tc"><button class="control control--accent" aria-label="Send amen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 11V6a2 2 0 0 1 4 0v4M11 10V4.5a2 2 0 0 1 4 0V11M15 10.5V7a2 2 0 0 1 4 0v7a6 6 0 0 1-6 6h-1.6a5 5 0 0 1-3.7-1.6L4 15s1.2-1.4 3-1"/></svg></button><div class="control__label">Amen</div></div>
+            <div class="tc"><button class="control" aria-label="Toggle captions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 11h3M7 14h6M14 11h3"/></svg></button><div class="control__label">Captions</div></div>
+            <div class="tc"><button class="control" aria-label="Open Scripture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg></button><div class="control__label">Word</div></div>
+            <span class="rule" style="width:1px;height:34px;margin-inline:.2rem"></span>
+            <div class="tc"><a class="control control--leave" href="dialog-end-room.html" aria-label="End gathering"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6c6-3 12-3 18 0 .6.3 1 1 1 1.6V10c0 .8-.7 1.5-1.5 1.4l-3-.3a1.5 1.5 0 0 1-1.3-1.2l-.3-1.7c-3-1-5.8-1-8.8 0l-.3 1.7a1.5 1.5 0 0 1-1.3 1.2l-3 .3C2.7 11.5 2 10.8 2 10V7.6C2 7 2.4 6.3 3 6Z"/></svg></a><div class="control__label">End</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- participant filmstrip -->
+      <div class="filmstrip">
+        <div class="tile tile--speaking"><div class="tile__fill" style="background:radial-gradient(120% 120% at 30% 20%,#2a2033,#0c1a29)"></div><span class="tile__name">Maria</span></div>
+        <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 60% 30%,#20364e,#0c1a29)"></div><span class="tile__name">Josiah</span><span class="tile__muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l16 16M9 5a3 3 0 0 1 6 1v3M15 12v-1M6 11a6 6 0 0 0 8.5 5.4M12 17v4"/></svg></span></div>
+        <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 40% 40%,#1c3340,#0c1a29)"></div><span class="tile__name">Grace</span></div>
+        <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 70% 20%,#2b2a44,#0c1a29)"></div><span class="tile__name">Daniel</span></div>
+        <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 30% 60%,#25324a,#0c1a29)"></div><span class="tile__name">Ruth</span></div>
+      </div>
+    </div>
+
+    <!-- rail: presence + companion -->
+    <aside class="rail">
+      <div class="panel">
+        <div class="panel__head"><strong>In the room</strong><span class="count">7</span></div>
+        <div class="panel__body" style="padding:var(--sp-3)">
+          <div class="plist">
+            <div class="prow"><span class="pav">A</span><span class="fill">Pastor Ade <span class="tag">host · you</span></span><span class="dot dot--ember"></span></div>
+            <div class="prow"><span class="pav">M</span><span class="fill">Maria</span><span class="dot dot--live"></span></div>
+            <div class="prow"><span class="pav">J</span><span class="fill">Josiah <span class="tag">muted</span></span></div>
+            <div class="prow"><span class="pav">G</span><span class="fill">Grace</span></div>
+            <div class="prow"><span class="pav">D</span><span class="fill">Daniel</span></div>
+            <div class="prow"><span class="pav">R</span><span class="fill">Ruth</span></div>
+            <div class="prow"><span class="pav">S</span><span class="fill">Sam</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__head"><strong>Amen</strong><span class="tag">last 60s</span></div>
+        <div class="panel__body">
+          <div class="cluster between"><span class="assent">🙌 24 raised</span><span class="mono muted small">as one</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__head"><strong>Companion</strong><span class="pill pill--sage" style="font-size:.7rem"><span class="dot dot--sage"></span> on-device</span></div>
+        <div class="panel__body stack gap-3">
+          <a class="btn btn--ghost btn--block btn--sm" href="scripture.html">Surface a passage</a>
+          <a class="btn btn--ghost btn--block btn--sm" href="journal.html">Open lament journal</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+</body>
+</html>

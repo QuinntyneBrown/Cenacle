@@ -1,0 +1,28 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Invitations and room access
+
+Person(host, "Host", "Opens Invite and copies the artifacts")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(dialog, "InviteDialog", "UI dialog", "Opens from the room's Invite control; hosts the artifacts and copy controls")
+  Component(artifacts, "InviteArtifacts", "UI component", "Renders the link .../r/{CODE}, the six-character code, and the QR")
+  Component(room, "Room", "Client model", "Holds the code allocated at room open and forms the invite link")
+  Component(qr, "QrEncoder", "Client encoder", "Encodes the invite link into a QR on-device")
+  Component(clip, "Clipboard", "Client wrapper", "Writes the link and code via the async Clipboard API; falls back to selectable text")
+}
+
+Container_Boundary(origin, "Room origin") {
+  Component(codeGen, "RoomCodeGenerator", "Server-side generator", "Draws six chars from an unambiguous alphabet with a CSPRNG and ensures uniqueness among open rooms")
+  ComponentDb(registry, "Room registry", "Ephemeral in-memory store", "Open rooms and their codes")
+}
+
+Rel(host, dialog, "Opens Invite in")
+Rel(dialog, artifacts, "Renders the link, code, and QR through")
+Rel(dialog, clip, "Copies the link and code through")
+Rel(artifacts, room, "Reads the room code and forms the link from")
+Rel(artifacts, qr, "Encodes the invite link with")
+Rel(codeGen, registry, "Checks uniqueness against and reserves the code in (L2-027)")
+Rel(codeGen, room, "Supplied the allocated code held by (at room open)")
+@enduml

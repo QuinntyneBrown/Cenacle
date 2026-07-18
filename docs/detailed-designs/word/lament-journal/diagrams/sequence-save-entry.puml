@@ -1,0 +1,50 @@
+@startuml
+title UML sequence behaviour — Save a journal entry on-device
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person at prayer" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "JournalView" as view
+  participant "JournalEditor" as editor
+end box
+box "On-device — browser platform" #FFF4E5
+  database "LocalStore (IndexedDB)" as store
+end box
+
+person -> view : Open the journal
+view -> store : listEntries() (L2-039)
+store --> view : Entries held on this device
+alt No entries yet
+  view --> person : Empty state invites the first entry; affirms private and on-device (L2-044)
+else Earlier entries exist
+  view --> person : "Earlier" list with dates, marked "only on this device" (L2-039)
+end
+
+person -> editor : Write freely
+editor -> editor : Update live word count and show on-device seal (L2-038)
+note over editor : No keystroke or content leaves the device (L2-070)
+
+person -> view : Save the entry
+view -> store : saveEntry(entry) — on-device only (L2-039)
+note over store : Origin-scoped storage; zero outbound requests (L2-070)
+store --> view : Persisted on this device
+view --> person : Entry saved and shown under "Earlier" (L2-039)
+
+opt Clear the current draft
+  person -> view : Clear
+  view -> editor : clear() — empty the editor (L2-043)
+  editor --> person : Editor emptied
+end
+@enduml

@@ -1,0 +1,30 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Live captions (Prayer client)
+
+Person(participant, "Participant", "Reads captions and chooses the caption language")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(controller, "CaptionController", "Client controller", "Taps live audio, drives transcription, and routes results to display and assistive technology")
+  Component(transcriber, "OnDeviceTranscriber", "On-device speech-to-text", "Incremental transcription over the on-device model runtime")
+  Component(model, "OnDeviceModel", "Prompt API wrapper", "Feature-detects and runs the on-device model; never a server call")
+  Component(overlay, "CaptionOverlay", "UI component", "Renders finalized text and the in-progress tail attributed to the speaker, legible over video")
+  Component(settings, "CaptionSettings", "UI and state", "Caption language selection from the supported set")
+  Component(announcer, "LiveRegionAnnouncer", "Accessibility", "Exposes captions to assistive technology via an ARIA live region")
+  ComponentDb(store, "LocalStore", "IndexedDB / localStorage wrapper", "Captions default and caption language")
+}
+
+Container(runtime, "On-device model runtime", "Browser Prompt API", "On-device speech-to-text; no network egress")
+
+Rel(participant, overlay, "Reads live captions in")
+Rel(participant, settings, "Chooses the caption language in")
+Rel(controller, transcriber, "Feeds live audio frames to")
+Rel(transcriber, model, "Runs speech-to-text through")
+Rel(model, runtime, "Calls the on-device model via", "in-process")
+Rel(controller, overlay, "Sends finalized and in-progress text to")
+Rel(controller, announcer, "Announces caption updates through")
+Rel(controller, settings, "Reads the caption language from")
+Rel(controller, store, "Reads and writes the captions default via")
+Rel(settings, store, "Persists the caption language via")
+@enduml

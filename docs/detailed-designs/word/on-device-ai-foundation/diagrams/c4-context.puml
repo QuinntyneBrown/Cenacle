@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — On-device intelligence foundation
+
+Person(person, "Person", "Uses Cenacle's Word features — reflections, Scripture, captions")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; runs all Word intelligence on the device")
+System_Ext(browserAi, "Browser on-device AI", "Prompt API and local model runtime; downloads and runs the language model on the device")
+
+Rel(person, cenacle, "Uses Word features in", "HTTPS")
+Rel(cenacle, browserAi, "Feature-detects, downloads, and runs the model through", "Prompt API (on-device)")
+@enduml

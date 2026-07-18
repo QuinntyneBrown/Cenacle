@@ -1,0 +1,42 @@
+@startuml
+title UML sequence behaviour — Generate a unique room code
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Host" as host
+box "Frontend — Prayer client" #E0F2FE
+  participant "GoLiveController" as golive
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+  participant "RoomCodeGenerator" as gen
+end box
+box "Backend — Room registry" #FFF4E5
+  database "Room registry" as registry
+end box
+
+host -> golive : Go live (neighbouring slice, L2-005)
+golive -> origin : Open room as host (WebTransport / HTTP/3)
+origin -> gen : Generate a room code (L2-027)
+loop Until unique among open rooms
+  gen -> gen : Draw six chars from the unambiguous alphabet via CSPRNG (L2-027)
+  gen -> registry : Is this code already open?
+  registry --> gen : Open or not open
+end
+gen -> registry : Reserve the unique code
+registry --> gen : Reserved
+gen --> origin : Unique six-character code (L2-027)
+origin --> golive : Room opened with code
+golive --> host : Enter the live room; code available for Invite
+@enduml

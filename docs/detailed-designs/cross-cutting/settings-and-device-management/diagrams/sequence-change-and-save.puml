@@ -1,0 +1,43 @@
+@startuml
+title UML sequence behaviour — Change and save settings
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "SettingsView" as view
+  participant "PresenceSettings" as presence
+end box
+box "Device — On-device storage" #FFF4E5
+  database "LocalStore" as store
+end box
+
+person -> view : Open Settings
+view -> store : loadSettings()
+store --> view : Saved SettingsModel
+view -> view : Populate an in-memory draft from the saved model
+
+person -> presence : Choose VP9 and adjust toggles
+presence -> view : Update the draft in memory only
+
+alt Person selects Save
+  view -> store : saveSettings(draft) (L2-063)
+  note over store : Written to IndexedDB / localStorage only;\nno settings data leaves the device (L2-063)
+  store --> view : Persisted on device; survives a reload (L2-063)
+  view --> person : Settings saved
+else Person selects Cancel
+  view -> view : Discard the draft, keep the saved model (L2-063)
+  view --> person : No changes applied
+end
+@enduml

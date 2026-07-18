@@ -1,0 +1,37 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — In-room presence and controls (Prayer client)
+
+Person(person, "Host or participant", "Sees the roster and operates the controls")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(roomView, "RoomView", "UI view", "Composes the stage, filmstrip, control dock, roster, caption overlay, and companion rail")
+  Component(dock, "ControlDock", "UI component", "Mic, camera, captions, companion, and amen controls; each reflects its state")
+  Component(roster, "Roster", "UI component", "Lists everyone present; marks host, you, muted, and speaking")
+  Component(captionOverlay, "CaptionOverlay", "UI component", "Shows on-device captions over the stage; hidden when the model is unavailable")
+  Component(companionRail, "CompanionRail", "UI surface", "Opens Scripture surfacing and the lament journal without ending the gathering")
+  Component(presenceStore, "PresenceStore", "Client store", "Participants, roles, mute/camera/speaking flags, present count, and local control state")
+  Component(layout, "ResponsiveLayout", "Layout controller", "Applies breakpoints; shows the 320px side rail at 992px and up, collapses it below")
+  Component(transport, "RoomTransport", "WebTransport client", "Stops/resumes media frames and relays presence to the room origin")
+  Component(onDevice, "OnDeviceModel", "Prompt API wrapper", "On-device caption source; reports whether captions are available")
+}
+
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Relays media and presence within the room")
+
+Rel(person, roomView, "Sees and controls the room in")
+Rel(roomView, dock, "Presents controls through")
+Rel(roomView, roster, "Presents presence through")
+Rel(roomView, captionOverlay, "Overlays captions through")
+Rel(roomView, companionRail, "Opens the companion through")
+Rel(roomView, layout, "Adapts to viewport width via")
+Rel(roomView, presenceStore, "Renders room state from")
+Rel(dock, presenceStore, "Updates local control and roster state in")
+Rel(dock, transport, "Stops or resumes media frames via")
+Rel(roster, presenceStore, "Reads participants from")
+Rel(captionOverlay, onDevice, "Receives on-device transcript from")
+Rel(presenceStore, transport, "Signals local presence through")
+Rel(transport, origin, "Publishes media and presence to", "WebTransport")
+Rel(origin, transport, "Relays others' presence changes to", "WebTransport")
+Rel(transport, presenceStore, "Applies relayed presence to")
+@enduml

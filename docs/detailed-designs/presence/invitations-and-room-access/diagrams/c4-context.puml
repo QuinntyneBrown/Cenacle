@@ -1,0 +1,13 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Invitations and room access
+
+Person(host, "Host", "Opens Invite and shares the link, code, and QR")
+Person(invitee, "Invited participant", "Receives the invite and joins the gathering")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; issues invite artifacts and the room code")
+
+Rel(host, cenacle, "Opens Invite and copies the link and code from", "HTTPS")
+Rel(host, invitee, "Shares the invite link, code, or QR with", "out of band")
+Rel(invitee, cenacle, "Joins the gathering with the invite via", "HTTPS / WebTransport")
+@enduml

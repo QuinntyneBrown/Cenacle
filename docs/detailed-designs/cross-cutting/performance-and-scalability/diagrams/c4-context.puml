@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Performance and scalability
+
+Person(host, "Host", "Publishes presence and views the gathering within the latency budget")
+Person(participant, "Participant", "Sees and hears others within the <400 ms presence budget")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; captures, encodes, transports, decodes, and renders presence within its performance budgets")
+
+Rel(host, cenacle, "Publishes and views presence within the latency and frame budgets using", "HTTPS / WebTransport")
+Rel(participant, cenacle, "Joins and views presence within the latency and frame budgets using", "HTTPS / WebTransport")
+@enduml

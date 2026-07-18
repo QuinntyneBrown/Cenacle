@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Audio-reactive worship visuals
+
+Person(participant, "Participant", "Sees the sanctuary and hears the live gathering audio")
+Person(others, "Fellow participants", "Contribute the live worship audio the room mixes")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; GPU sanctuary visuals move with the live in-room audio, analysed on-device")
+
+Rel(participant, cenacle, "Sees the audio-reactive sanctuary in", "HTTPS")
+Rel(others, cenacle, "Contribute live worship audio to", "HTTPS / WebTransport")
+@enduml

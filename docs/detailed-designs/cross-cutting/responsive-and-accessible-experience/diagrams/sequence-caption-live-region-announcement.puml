@@ -1,0 +1,39 @@
+@startuml
+title UML sequence behaviour — Caption live-region announcement
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Screen-reader user" as user
+box "Frontend — Prayer client" #E0F2FE
+  participant "OnDeviceCaptions" as captions
+  participant "CaptionOverlay" as overlay
+  participant "LiveRegionAnnouncer" as announcer
+  participant "Live region (aria-live)" as region
+end box
+box "Platform — Assistive technology" #FFF4E5
+  participant "Assistive technology" as at
+end box
+
+captions -> overlay : Caption update (speaker, text, isFinal) (L2-046)
+alt In-progress tail
+  overlay -> overlay : Update visual tail only, distinguished from finalized text (L2-046)
+  note right of overlay : In-progress tokens are not announced, so the reader is not flooded
+else Finalized caption line
+  overlay -> announcer : announce(text, Polite) (L2-083)
+  announcer -> region : Set text of the aria-live="polite" region without moving focus
+  region -> at : Accessibility-tree mutation observed
+  at --> user : Announce the caption aloud, focus unchanged (L2-083)
+end
+overlay --> user : Render caption over the stage at AA contrast (L2-084)
+@enduml

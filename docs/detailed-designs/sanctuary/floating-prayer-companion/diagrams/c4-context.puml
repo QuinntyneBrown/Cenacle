@@ -1,0 +1,13 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Floating prayer companion
+
+Person(person, "Participant", "A person in a live gathering who keeps it present while reading or working elsewhere")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; floats the live gathering in an always-on-top window")
+System_Ext(otherApps, "Other applications and tabs", "What the person reads or works in while the gathering floats")
+
+Rel(person, cenacle, "Pops the gathering into a floating window and returns it in", "HTTPS / WebTransport")
+Rel(person, otherApps, "Reads or works in")
+Rel(cenacle, otherApps, "Floating companion stays visible over")
+@enduml

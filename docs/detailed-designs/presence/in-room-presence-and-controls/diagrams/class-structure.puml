@@ -1,0 +1,124 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — In-room presence and controls
+
+enum ParticipantRole {
+  Host
+  Participant
+}
+
+enum Breakpoint {
+  XS
+  SM
+  MD
+  LG
+  XL
+}
+
+class Participant {
+  +id: string
+  +displayName: string
+  +role: ParticipantRole
+  +isSelf: boolean
+  +isMuted: boolean
+  +isCameraOff: boolean
+  +isSpeaking: boolean
+}
+
+class LocalControlState {
+  +micMuted: boolean
+  +cameraOff: boolean
+  +captionsOn: boolean
+  +companionOpen: boolean
+}
+
+class PresenceUpdate {
+  +participantId: string
+  +isMuted: boolean
+  +isCameraOff: boolean
+}
+
+class PresenceStore {
+  +participants: Participant[]
+  +presentCount: number
+  +localControls: LocalControlState
+  +setMuted(muted: boolean): void
+  +setCameraOff(off: boolean): void
+  +setCaptionsOn(on: boolean): void
+  +applyRelayed(update: PresenceUpdate): void
+}
+
+class RoomView {
+  +render(): void
+}
+
+class ControlDock {
+  +toggleMic(): void
+  +toggleCamera(): void
+  +toggleCaptions(): void
+  +openCompanion(): void
+  +sendAmen(): void
+}
+
+class Roster {
+  +render(participants: Participant[]): void
+}
+
+class CaptionOverlay {
+  +visible: boolean
+  +show(): void
+  +hide(): void
+}
+
+class CompanionRail {
+  +isOpen: boolean
+  +open(role: ParticipantRole): void
+  +close(): void
+}
+
+class ResponsiveLayout {
+  +breakpoint: Breakpoint
+  +sideRailVisible: boolean
+  +sideRailWidth: number
+  +apply(viewportWidth: number): void
+}
+
+class RoomTransport {
+  +setAudioSending(on: boolean): void
+  +setVideoSending(on: boolean): void
+  +signalPresence(update: PresenceUpdate): void
+}
+
+class OnDeviceModel {
+  +isAvailable(): boolean
+}
+
+RoomView *-- ControlDock
+RoomView *-- Roster
+RoomView *-- CaptionOverlay
+RoomView *-- CompanionRail
+RoomView *-- ResponsiveLayout
+RoomView --> PresenceStore : renders
+PresenceStore *-- "0..*" Participant : holds
+PresenceStore --> LocalControlState : owns
+Participant --> ParticipantRole : has
+ControlDock ..> PresenceStore : updates
+ControlDock ..> RoomTransport : stops / resumes frames
+Roster ..> PresenceStore : reads
+CaptionOverlay ..> OnDeviceModel : transcript from
+CompanionRail ..> ParticipantRole : labels by
+PresenceStore ..> RoomTransport : signals presence
+RoomTransport ..> PresenceUpdate : carries
+ResponsiveLayout --> Breakpoint : has
+@enduml

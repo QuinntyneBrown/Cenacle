@@ -1,0 +1,62 @@
+@startuml
+title UML sequence behaviour — Host ends the gathering, later reuse shows room-not-found
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Host" as host
+actor "Returning person" as returner
+box "Frontend — Prayer client" #E0F2FE
+  participant "RoomLifecycleController" as lifecycle
+  participant "EndDialog" as endDlg
+  participant "RoomNotFoundState" as notFound
+  participant "RoomTransport" as transport
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+box "Backend — Room registry" #FFF4E5
+  database "Room registry" as registry
+end box
+
+host -> lifecycle : Choose End
+lifecycle -> endDlg : Show destructive confirmation (L2-029)
+endDlg --> host : Closes the room for all; same link will not reopen; on-device data is not deleted
+alt Host cancels
+  host -> endDlg : Cancel
+  endDlg --> lifecycle : Dismiss; room stays open
+  lifecycle --> host : Remain in the gathering
+else Host confirms
+  host -> endDlg : Confirm end
+  endDlg -> lifecycle : confirmEnd()
+  lifecycle -> transport : Signal end of gathering
+  transport -> origin : Close room (L2-029)
+  origin -> registry : Free the room code (L2-029)
+  registry --> origin : Code released
+  origin --> transport : Room closed; all present disconnected
+  transport --> lifecycle : Session closed
+  lifecycle --> host : Return to landing screen
+end
+
+== Later: the former link is reopened ==
+
+returner -> lifecycle : Open the former link or code
+lifecycle -> transport : Resolve the room code
+transport -> origin : Join the former room
+origin -> registry : Look up the code
+registry --> origin : No open room for the code
+origin --> transport : Room not open (L2-032)
+transport --> lifecycle : Not found
+lifecycle -> notFound : Show room-not-found; name the code (L2-032)
+notFound --> returner : That room isn't open — Try another code / Host your own room
+@enduml

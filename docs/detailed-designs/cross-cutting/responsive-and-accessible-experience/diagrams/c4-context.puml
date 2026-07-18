@@ -1,0 +1,14 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Responsive and accessible experience
+
+Person(person, "Person", "Operates Cenacle by keyboard, pointer, or screen reader, across viewport sizes")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; presents every screen responsively and accessibly")
+System_Ext(at, "Assistive technology", "Screen reader that conveys roles, labels, and announcements to the person")
+System_Ext(platform, "Operating system / browser", "Supplies viewport size, reduce-motion preference, and contrast settings")
+
+Rel(person, cenacle, "Operates by keyboard, pointer, and screen reader", "HTTPS")
+Rel(cenacle, at, "Exposes roles, labels, and live-region updates to", "ARIA")
+Rel(cenacle, platform, "Reads viewport width and reduce-motion preference from", "matchMedia")
+@enduml

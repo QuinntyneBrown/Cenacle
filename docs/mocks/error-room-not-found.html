@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Room not found</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ================= TOP BAR ================= -->
+<header class="topbar">
+  <div class="container">
+    <a class="brand" href="index.html">
+      <svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg>
+      Cenacle <small>upper room</small>
+    </a>
+    <div class="cluster gap-3">
+      <a class="btn btn--quiet btn--sm" href="dialog-join-room.html">Join a room</a>
+      <a class="btn btn--primary btn--sm" href="create-room.html">Host a room</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= ERROR STATE ================= -->
+<main class="state">
+  <div class="state__inner">
+    <div class="state__mark state__mark--danger">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg>
+    </div>
+    <h1>That room isn't open</h1>
+    <p>The code <span class="mono">K7QP2M</span> doesn't match an open room. It may have ended, or the link may be mistyped — codes are six characters.</p>
+    <div class="cluster gap-3">
+      <a class="btn btn--primary" href="dialog-join-room.html">Try another code</a>
+      <a class="btn btn--ghost" href="create-room.html">Host your own room</a>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container between" style="flex-wrap:wrap;gap:var(--sp-4)">
+    <a class="brand" href="index.html" style="font-size:1rem"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg> Cenacle</a>
+    <p class="small muted">A small gathered room. Presence over polish. Privacy by architecture.</p>
+    <nav class="cluster gap-4 small"><a href="index.html">All screens</a><a href="settings.html">Settings</a><a href="error-unsupported-browser.html">Requirements</a></nav>
+  </div>
+</footer>
+
+</body>
+</html>

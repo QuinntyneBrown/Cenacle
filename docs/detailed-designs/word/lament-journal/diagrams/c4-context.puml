@@ -1,0 +1,10 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Private lament journal
+
+Person(seeker, "Person at prayer", "Writes freely and may ask for a gentle reflection")
+System(cenacle, "Cenacle", "Browser-native prayer space; the journal writes, reflects, and stores entirely on the device")
+
+Rel(seeker, cenacle, "Writes and reflects privately in", "on-device; no network")
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Performance and scalability
+
+Person(participant, "Participant", "Views presence within the latency and frame budgets")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — WebCodecs, WebTransport, WebGPU", "Meters glass-to-glass latency, schedules per-frame work, and defers heavy startup work")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Relays media within one small room and enforces small-room capacity; persists no media")
+  Container(registry, "Room registry", "Ephemeral in-memory store", "Open rooms and their codes; source of the live room count")
+}
+
+Rel(participant, spa, "Publishes and views presence in", "HTTPS")
+Rel(spa, origin, "Publishes and subscribes to media over", "WebTransport / HTTP/3")
+Rel(spa, spa, "Meters glass-to-glass latency and schedules per-frame work in")
+Rel(origin, registry, "Reads open rooms and capacity from")
+@enduml

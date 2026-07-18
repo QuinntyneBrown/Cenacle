@@ -1,0 +1,92 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Settings and device management
+
+enum CodecPreference {
+  H264
+  VP9
+}
+
+class SettingsModel {
+  +cameraId: string
+  +microphoneId: string
+  +speakerId: string
+  +codec: CodecPreference
+  +captionsEnabled: boolean
+  +captionLanguage: string
+  +ambientVisualsEnabled: boolean
+  +audioReactiveEnabled: boolean
+  +clone(): SettingsModel
+}
+
+class SettingsView {
+  +draft: SettingsModel
+  +open(): void
+  +save(): void
+  +cancel(): void
+}
+
+class DeviceSettings {
+  +cameras: DeviceInfo[]
+  +microphones: DeviceInfo[]
+  +speakers: DeviceInfo[]
+  +select(kind: string, deviceId: string): void
+}
+
+class MicTest {
+  +levelDb: number
+  +start(microphoneId: string): void
+  +isFlat(): boolean
+  +stop(): void
+}
+
+class PresenceSettings {
+  +latencyTargetMs: number = 400
+  +chooseCodec(codec: CodecPreference): void
+}
+
+class CaptionsWordSettings {
+  +modelStatus: string
+  +setEnabled(enabled: boolean): void
+  +setLanguage(language: string): void
+}
+
+class SanctuarySettings {
+  +reduceMotionRespected: boolean
+  +setAmbientVisuals(enabled: boolean): void
+  +setAudioReactive(enabled: boolean): void
+}
+
+class MediaDeviceService {
+  +enumerate(): DeviceInfo[]
+  +acquire(microphoneId: string): MediaStream
+}
+
+class LocalStore {
+  +loadSettings(): SettingsModel
+  +saveSettings(settings: SettingsModel): void
+}
+
+SettingsView *-- SettingsModel : holds draft
+SettingsView --> DeviceSettings : hosts
+SettingsView --> PresenceSettings : hosts
+SettingsView --> CaptionsWordSettings : hosts
+SettingsView --> SanctuarySettings : hosts
+SettingsView --> LocalStore : loads / saves through
+DeviceSettings *-- MicTest : hosts
+DeviceSettings ..> MediaDeviceService : enumerates via
+MicTest ..> MediaDeviceService : acquires stream from
+PresenceSettings --> CodecPreference : sets
+SettingsModel --> CodecPreference : has
+@enduml

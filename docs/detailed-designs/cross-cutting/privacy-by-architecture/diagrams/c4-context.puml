@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Privacy by architecture
+
+Person(person, "Person at prayer", "Writes journal entries, names Scripture themes, and reads on-device captions")
+System(cenacle, "Cenacle", "Browser-native prayer space; runs all private intelligence on the device and keeps private content there")
+System_Ext(cloudai, "Off-device AI / analytics", "Any cloud inference or analytics endpoint — outside the privacy boundary")
+
+Rel(person, cenacle, "Writes, reflects, and prays privately in", "HTTPS")
+Rel(cenacle, cloudai, "Establishes no connection to; CSP connect-src excludes it (L2-070)", "no path")
+@enduml

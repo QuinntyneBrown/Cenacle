@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Allow camera &amp; mic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* page-local layout only — a simplified lobby behind the scrim */
+  .lobby{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column}
+  .lobby__bar{flex:none;border-bottom:1px solid var(--hairline);background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(12px)}
+  .lobby__bar .inner{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);height:60px;padding-inline:var(--sp-5)}
+  .lobby__body{flex:1;min-height:0;display:grid;place-items:center;padding:var(--sp-6)}
+  .lobby__preview{width:min(560px,92%);border-radius:var(--r-xl);overflow:hidden;border:1px solid var(--border);background:linear-gradient(160deg,#13273c,#0a1420);box-shadow:var(--shadow-lg);aspect-ratio:16/10;position:relative}
+  .lobby__preview .glow{position:absolute;inset:0;background:radial-gradient(55% 65% at 50% 34%,rgba(228,146,58,.20),transparent 72%)}
+  .lobby__preview .fill{position:absolute;inset:0;background:radial-gradient(120% 120% at 40% 20%,#28405a,#0c1a29)}
+  .cluster--row{flex-wrap:nowrap;align-items:flex-start}
+</style>
+</head>
+<body class="night">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ===== simplified lobby backdrop ===== -->
+<div class="lobby" aria-hidden="true">
+  <header class="lobby__bar">
+    <div class="inner">
+      <div class="cluster gap-4">
+        <a class="brand" href="index.html" style="font-size:1.05rem" tabindex="-1"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg></a>
+        <span class="rule" style="width:1px;height:24px"></span>
+        <div class="cluster gap-2"><strong>Vespers</strong><span class="pill"><span class="dot dot--ember"></span> Getting ready</span></div>
+      </div>
+      <div class="cluster gap-3">
+        <span class="pill"><span class="mono">7 present</span></span>
+      </div>
+    </div>
+  </header>
+  <div class="lobby__body">
+    <div class="lobby__preview">
+      <div class="fill"></div>
+      <div class="glow"></div>
+      <span class="tile__name" style="left:var(--sp-4);bottom:var(--sp-4)"><span class="dot dot--ember"></span> You</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== permissions dialog ===== -->
+<div class="scrim">
+  <div class="dialog dialog--sheet" role="dialog" aria-modal="true" aria-labelledby="perm-title">
+    <div class="dialog__accent"></div>
+    <a class="dialog__close" href="landing.html" aria-label="Close and go back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </a>
+
+    <div class="dialog__head">
+      <span class="eyebrow dialog__eyebrow is-plain">Before you enter</span>
+      <h2 class="dialog__title" id="perm-title">Let the room see and hear you</h2>
+    </div>
+
+    <div class="dialog__body stack gap-4">
+      <div class="cluster cluster--row gap-3">
+        <span class="glyph">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.5-2.6v9.2L15 14M4 7h9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/></svg>
+        </span>
+        <p class="fill"><strong>Your camera</strong> — so the room can see your face as you pray together.</p>
+      </div>
+
+      <div class="cluster cluster--row gap-3">
+        <span class="glyph">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/></svg>
+        </span>
+        <p class="fill"><strong>Your microphone</strong> — so your voice is part of the prayer.</p>
+      </div>
+
+      <div class="seal">
+        <span class="seal__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg>
+        </span>
+        <span>Used only for this live room. <b>Nothing is recorded.</b></span>
+      </div>
+
+      <p class="small muted">Your browser will ask to confirm.</p>
+    </div>
+
+    <div class="dialog__foot">
+      <a class="btn btn--quiet" href="landing.html">Not now</a>
+      <a class="btn btn--primary" href="lobby.html">Allow camera &amp; mic</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

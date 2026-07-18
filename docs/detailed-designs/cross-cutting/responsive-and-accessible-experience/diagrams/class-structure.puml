@@ -1,0 +1,90 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Responsive and accessible experience
+
+enum Breakpoint {
+  XS
+  SM
+  MD
+  LG
+  XL
+}
+
+enum VisualRegister {
+  Manuscript
+  UpperRoom
+}
+
+enum LiveRegionPoliteness {
+  Polite
+  Assertive
+}
+
+class AppShell {
+  +applyLayout(): void
+  +applyRegister(register: VisualRegister): void
+  +present(dialog: AccessibleDialog): void
+}
+
+class ResponsiveLayout {
+  +current: Breakpoint
+  +resolve(width: number): Breakpoint
+  +observe(): void
+  +hasNoHorizontalOverflow(): boolean
+}
+
+class RegisterTheme {
+  +register: VisualRegister
+  +serifScopedToScripture: boolean
+  +apply(register: VisualRegister): void
+  +meetsContrastAA(): boolean
+}
+
+class ReduceMotion {
+  +enabled: boolean
+  +observe(): void
+  +shouldAnimate(): boolean
+}
+
+class AccessibleDialog {
+  +role: string
+  +labelledById: string
+  +open(opener: Element): void
+  +close(): void
+  +onEscape(): void
+}
+
+class FocusManager {
+  -opener: Element
+  +trap(container: Element, opener: Element): void
+  +release(): void
+}
+
+class LiveRegionAnnouncer {
+  -politeRegion: Element
+  -assertiveRegion: Element
+  +announce(text: string, politeness: LiveRegionPoliteness): void
+}
+
+AppShell o-- ResponsiveLayout : composes
+AppShell o-- RegisterTheme : composes
+AppShell o-- ReduceMotion : composes
+AppShell --> AccessibleDialog : presents
+AccessibleDialog --> FocusManager : uses
+AccessibleDialog ..> LiveRegionAnnouncer : announces title through
+ResponsiveLayout --> Breakpoint : resolves
+RegisterTheme --> VisualRegister : has
+RegisterTheme ..> ReduceMotion : consults
+LiveRegionAnnouncer --> LiveRegionPoliteness : uses
+@enduml

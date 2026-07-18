@@ -1,0 +1,69 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Invitations and room access
+
+class InviteDialog {
+  +open(room: Room): void
+  +copyLink(): void
+  +copyCode(): void
+}
+
+class InviteArtifacts {
+  +link: string
+  +code: string
+  +qr: QrCode
+  +build(room: Room): void
+}
+
+class Room {
+  +code: string
+  +appOrigin: string
+  +role: string
+  +inviteLink(): string
+}
+
+class QrEncoder {
+  +encode(text: string): QrCode
+}
+
+class QrCode {
+  +dataUrl: string
+}
+
+class Clipboard {
+  +isAvailable(): boolean
+  +writeText(text: string): Promise<boolean>
+}
+
+class RoomCodeGenerator {
+  +alphabet: string
+  +length: int
+  +generate(registry: RoomRegistry): string
+}
+
+class RoomRegistry {
+  +isOpen(code: string): boolean
+  +reserve(code: string): void
+  +release(code: string): void
+}
+
+InviteDialog --> InviteArtifacts : shows
+InviteDialog --> Clipboard : uses
+InviteArtifacts ..> Room : reads
+InviteArtifacts --> QrEncoder : uses
+InviteArtifacts --> QrCode : holds
+QrEncoder ..> QrCode : produces
+RoomCodeGenerator ..> RoomRegistry : checks and reserves in
+RoomCodeGenerator ..> Room : allocates code for
+@enduml

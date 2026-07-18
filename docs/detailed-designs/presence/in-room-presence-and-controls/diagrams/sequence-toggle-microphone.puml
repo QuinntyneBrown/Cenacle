@@ -1,0 +1,47 @@
+@startuml
+title UML sequence behaviour — Toggle the microphone
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Host or participant" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "ControlDock" as dock
+  participant "PresenceStore" as store
+  participant "Roster" as roster
+  participant "RoomTransport" as transport
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+
+person -> dock : Activate the microphone control (L2-016)
+alt Currently live — mute
+  dock -> transport : Stop sending audio frames (L2-016)
+  dock -> store : setMuted(true)
+  store -> roster : Mark own entry "muted" (L2-020)
+  dock -> dock : Set pressed state and label to "Muted" (L2-016)
+  store -> transport : Signal presence — muted
+  transport -> origin : Relay mute to the room (L2-016)
+  origin --> transport : Acknowledged
+else Currently muted — unmute
+  dock -> transport : Resume sending audio frames (L2-016)
+  dock -> store : setMuted(false)
+  store -> roster : Clear "muted" on own entry (L2-020)
+  dock -> dock : Set pressed state and label to "Live"
+  store -> transport : Signal presence — live
+  transport -> origin : Relay unmute to the room
+  origin --> transport : Acknowledged
+end
+roster --> person : Updated roster and control state
+@enduml

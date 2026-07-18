@@ -1,0 +1,46 @@
+@startuml
+title UML sequence behaviour — One-time model download
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "Word features" as gate
+  participant "ModelDownloadController" as downloadCtl
+  participant "OnDeviceModel" as model
+  participant "CapabilityStore" as store
+end box
+box "On-device — Browser AI runtime (Prompt API)" #FFF4E5
+  participant "Prompt API runtime" as runtime
+end box
+
+person -> gate : Enable on-device intelligence
+gate -> downloadCtl : start(onProgress) (L2-050)
+downloadCtl -> model : download(onProgress)
+model -> runtime : Begin one-time model download
+loop While downloading
+  runtime --> model : progress(bytesDone, bytesTotal)
+  model --> downloadCtl : DownloadProgress
+  downloadCtl --> gate : Size, percentage, estimate; happens once (L2-050)
+  gate --> person : Progress shown; on-device, zero requests once ready (L2-050)
+end
+opt Continue in the background
+  person -> gate : Continue in the background
+  gate --> person : Return to the room; download keeps running (L2-050)
+end
+runtime --> model : Download complete
+model -> store : set(Ready)
+store -> gate : Enable Word features without a page reload (L2-050)
+gate --> person : Reflections, Scripture, captions now available
+@enduml

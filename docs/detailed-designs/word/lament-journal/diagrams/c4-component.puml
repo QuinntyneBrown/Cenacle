@@ -1,0 +1,22 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Private lament journal (Prayer client)
+
+Person(seeker, "Person at prayer", "Writes an entry and may ask for a reflection")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(view, "JournalView", "UI view", "Empty state, editor, Earlier list, and reflection panel")
+  Component(editor, "JournalEditor", "UI component", "Free-writing editor with a live word count and an on-device seal")
+  Component(svc, "ReflectionService", "Client service", "Requests a gentle, on-device reflection; gates on model availability")
+}
+
+Container(model, "OnDeviceModel", "Prompt API wrapper", "Runs the browser on-device model; feature-detects availability")
+ContainerDb(store, "LocalStore", "IndexedDB / localStorage wrapper", "Journal entries and kept reflections; origin-scoped and clearable")
+
+Rel(seeker, view, "Writes and reflects in")
+Rel(view, editor, "Hosts the editor, word count, and on-device seal")
+Rel(view, svc, "Requests a reflection through")
+Rel(view, store, "Saves entries and kept reflections via")
+Rel(svc, model, "Generates the reflection with", "on-device Prompt API")
+@enduml

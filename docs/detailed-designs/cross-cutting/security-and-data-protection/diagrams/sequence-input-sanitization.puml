@@ -1,0 +1,47 @@
+@startuml
+title UML sequence behaviour — Input sanitization and safe rendering
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "Prayer UI" as ui
+  participant "InputSanitizer" as sanitizer
+  participant "LocalStore" as store
+end box
+
+person -> ui : Enter user text (room / display name, theme, journal, pasted link)
+ui -> sanitizer : validate(text, maxLength) (L2-073)
+alt Exceeds length limit (e.g. name > 60)
+  sanitizer --> ui : Truncate at the boundary (L2-073)
+else Within limits
+  sanitizer --> ui : Length-checked text
+end
+opt Pasted invite link
+  ui -> sanitizer : parseRoomReference(link) (L2-073)
+  alt Well-formed room reference
+    sanitizer --> ui : Extracted room code
+  else Malformed or foreign URL
+    sanitizer --> ui : Reject with a hint (L2-073)
+  end
+end
+ui -> sanitizer : encode(text) (L2-073)
+sanitizer --> ui : Inert, encoded text
+ui -> ui : Render as literal text; no script execution (L2-073)
+opt Journal or settings text
+  ui -> store : Persist origin-scoped and clearable (L2-076)
+  store --> ui : Stored on the device only
+end
+ui --> person : Display user text as inert content
+@enduml

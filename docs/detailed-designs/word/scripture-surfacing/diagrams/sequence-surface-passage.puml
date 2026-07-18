@@ -1,0 +1,54 @@
+@startuml
+title UML sequence behaviour — Surface a passage
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+
+actor "Person" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "ScriptureView" as view
+  participant "ThemeInput" as input
+  participant "PassageMatcher" as matcher
+end box
+box "Frontend — On-device storage" #FFF4E5
+  database "VerseIndex" as index
+  database "LocalStore" as store
+end box
+
+person -> view : Open Scripture surfacing
+view -> store : Read recent themes (L2-037)
+store --> view : Recent themes, device-local
+view -> input : Show theme field and quick-pick chips (L2-033)
+person -> input : Type a theme or pick a chip (L2-033)
+input --> view : Submitted theme as inert text (L2-073)
+view -> matcher : surface(theme)
+matcher -> matcher : Match entirely on-device, zero outbound requests (L2-070)
+matcher -> index : Look up existing passages for the theme (L2-034)
+index --> matcher : Matching passages, or none
+
+alt A passage matched
+  matcher --> view : MatchResult with an existing passage, retrieved not generated (L2-034)
+  view -> store : Record the surfaced theme, device-local (L2-037)
+  view --> person : Show passage and reference in the serif register, "why this surfaced", and actions (L2-034, L2-035)
+  opt Person chooses Save
+    person -> view : Save
+    view -> store : Save passage to on-device storage (L2-035)
+    store --> view : Saved, available offline
+  end
+else No passage matched
+  matcher --> view : MatchResult with no passage and plainer-word suggestions (L2-036)
+  view --> person : Say plainly no passage matched, suggest plainer words, fabricate no reference (L2-036)
+end
+@enduml

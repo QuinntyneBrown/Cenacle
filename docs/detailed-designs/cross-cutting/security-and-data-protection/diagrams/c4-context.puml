@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Security and data protection
+
+Person(person, "Person joining a gathering", "Presents a room credential over an encrypted connection")
+Person_Ext(attacker, "Unauthorized client", "Attempts to guess room codes or reach media without a valid credential")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; authenticates transport, authorizes room access, and renders user text as inert")
+
+Rel(person, cenacle, "Joins a gathering over authenticated, encrypted transport", "HTTPS / HTTP/3 (TLS)")
+Rel(attacker, cenacle, "Attempts unauthorized access; refused and rate-limited", "HTTPS / HTTP/3")
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Floating prayer companion
+
+Person(person, "Participant", "Pops and returns the floating companion")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — WebCodecs, WebTransport, Document Picture-in-Picture", "Hosts the live room and the floating companion view")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Relays the room's live media; persists none")
+}
+
+System_Ext(browser, "Browser — Document Picture-in-Picture", "Provides the always-on-top window via documentPictureInPicture")
+
+Rel(person, spa, "Pops and returns the floating companion in", "HTTPS")
+Rel(spa, browser, "Requests an always-on-top window via", "documentPictureInPicture")
+Rel(spa, origin, "Keeps the live media session with", "WebTransport / HTTP/3")
+@enduml

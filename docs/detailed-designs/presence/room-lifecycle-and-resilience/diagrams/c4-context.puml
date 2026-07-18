@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Room lifecycle and resilience
+
+Person(host, "Host", "Ends the gathering for everyone")
+Person(participant, "Participant", "Leaves and may rejoin while the room is open")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; manages the room lifecycle and reconnection")
+
+Rel(host, cenacle, "Ends the gathering in", "HTTPS / WebTransport")
+Rel(participant, cenacle, "Leaves, rejoins, or reconnects to", "HTTPS / WebTransport")
+@enduml

@@ -1,0 +1,48 @@
+@startuml
+title UML sequence behaviour — Send and surface a reaction
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Participant" as actor
+box "Frontend — Prayer client (sender)" #E0F2FE
+  participant "ReactionControl" as control
+  participant "ReactionSender" as sender
+  participant "RoomTransport" as tx
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+box "Frontend — Prayer client (each participant)" #E0F2FE
+  participant "ReactionReceiver" as receiver
+  participant "ReactionCounter" as counter
+  participant "MoteRenderer" as motes
+end box
+
+actor -> control : Activate "amen" / raised hand
+control -> sender : send(kind)
+opt Repeat within the minimum send interval
+  sender --> control : Drop the extra reaction, client rate-limited (L2-022)
+end
+sender -> tx : Write the reaction as a WebTransport datagram (L2-022)
+tx -> origin : Datagram (unreliable, unordered)
+origin -> receiver : Fan out the datagram to every participant (L2-023)
+receiver -> counter : record(reaction)
+counter --> receiver : Rolling 60 s count (L2-024)
+alt Reduced motion enabled
+  receiver -> motes : Brief static indication, no large motion (L2-023)
+else Standard motion
+  receiver -> motes : Rising mote; aggregate the burst without dropping frame rate (L2-023)
+end
+motes --> actor : Room shows the reaction surfaced under ~500 ms (L2-023)
+@enduml

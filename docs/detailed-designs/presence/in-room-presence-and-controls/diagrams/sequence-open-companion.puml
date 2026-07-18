@@ -1,0 +1,46 @@
+@startuml
+title UML sequence behaviour — Open the companion from the room
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Host or participant" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "ControlDock" as dock
+  participant "CompanionRail" as rail
+  participant "RoomView" as room
+  participant "Companion (Scripture / journal)" as companion
+  participant "RoomTransport" as transport
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+
+person -> dock : Activate the "Word" companion control (L2-019)
+dock -> rail : open(role)
+alt Host
+  rail -> rail : Label the companion "Surface a passage" (L2-019)
+else Participant
+  rail -> rail : Label the companion "Follow along in the Word" (L2-019)
+end
+rail -> companion : Open Scripture surfacing and the lament journal
+rail -> room : Reveal the companion in the side rail (L2-021)
+transport -> origin : Continue publishing; session unchanged (L2-019)
+note over transport, origin : The gathering is not ended; presence continues over WebTransport while the companion runs on-device
+companion --> person : Companion shown alongside the live room
+opt Return to the gathering
+  person -> rail : Close the companion
+  rail -> room : Restore full-room focus; no participant dropped (L2-019)
+  room --> person : Full room shown, media uninterrupted
+end
+@enduml

@@ -1,0 +1,49 @@
+@startuml
+title UML sequence behaviour — Host a live gathering
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Host" as host
+box "Frontend — Prayer client" #E0F2FE
+  participant "HostSetupView" as view
+  participant "MediaDeviceService" as devices
+  participant "SelfPreview" as preview
+  participant "GoLiveController" as golive
+  participant "MediaEncoder" as encoder
+  participant "RoomTransport" as transport
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+
+host -> view : Name the gathering, pick devices, set on-device toggles
+view -> devices : Acquire selected camera and microphone (L2-002)
+devices --> view : Local MediaStream
+view -> preview : Render private self-preview and mic-level meter (L2-003)
+host -> view : Activate "Go live"
+view -> golive : goLive(setup)
+alt Name empty or whitespace
+  golive --> view : Block go-live, show inline hint (L2-001)
+  view --> host : Prompt for a gathering name
+else Name present (1-60 chars)
+  golive -> encoder : Configure WebCodecs encoder (L2-005)
+  golive -> transport : Open WebTransport session to room origin (L2-005)
+  transport -> origin : Establish HTTP/3 session, request room as host
+  origin --> transport : Room opened, host admitted
+  encoder -> transport : Encoded media chunks
+  transport -> origin : Publish encoded frames (L2-005)
+  golive --> view : Enter the live room as host
+  view --> host : Live room shown — host, broadcasting
+end
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Scripture surfacing (Prayer client)
+
+Person(person, "Person", "Names a theme, reads the passage, acts on the result")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(scriptureView, "ScriptureView", "UI view", "Theme entry, surfaced passage in the serif register, result actions, and recent themes")
+  Component(themeInput, "ThemeInput", "UI component", "Typed theme field and quick-pick suggestion chips")
+  Component(matcher, "PassageMatcher", "Client component", "Matches a theme against the verse index and returns an existing passage; retrieval, not generation")
+}
+
+ComponentDb(verseIndex, "VerseIndex", "On-device passage store", "Passages keyed by theme; read-only")
+ComponentDb(localStore, "LocalStore", "IndexedDB / localStorage wrapper", "Recent themes and saved passages")
+
+Rel(person, scriptureView, "Names a theme in")
+Rel(scriptureView, themeInput, "Collects the theme through")
+Rel(scriptureView, matcher, "Requests a passage from")
+Rel(matcher, verseIndex, "Retrieves an existing passage from", "on-device, no network")
+Rel(scriptureView, localStore, "Records recent themes and saves passages through")
+@enduml

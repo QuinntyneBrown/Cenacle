@@ -1,0 +1,31 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Reliability machinery (Prayer client)
+
+Person(person, "Person in a gathering", "Hosts or joins")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(view, "Feature views", "UI views", "Host setup, green room, live room, Word, and sanctuary surfaces")
+  Component(boundary, "ErrorBoundary", "UI error boundary", "Catches unexpected thrown errors and renders a recoverable message")
+  Component(router, "DefinedStateRouter", "Client router", "Maps a classified failure to its defined state (L2-030/031/032/065/066/067/068)")
+  Component(transport, "RoomTransport", "WebTransport client", "Opens the HTTP/3 session; reports connect and disconnect")
+  Component(telemetry, "TelemetryClient", "Client service", "Records non-identifying operational signals; no content, no PII")
+}
+
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Admits publishers and subscribers")
+Container(monitor, "Origin monitor", "Availability probe", "Probes origin reachability")
+System_Ext(alerting, "Monitoring & alerting", "Operational sink and pager", "Receives signals; pages the operator")
+
+Rel(person, view, "Acts in")
+Rel(view, boundary, "Is wrapped by")
+Rel(view, router, "Routes classified failures through")
+Rel(router, view, "Selects the defined state for")
+Rel(transport, router, "Reports connect and transport failures to")
+Rel(transport, origin, "Connects to", "WebTransport / HTTP/3")
+Rel(boundary, telemetry, "Records contained-error signal via")
+Rel(router, telemetry, "Records failure-kind signal via")
+Rel(telemetry, alerting, "Emits non-identifying signals to")
+Rel(monitor, origin, "Probes availability of")
+Rel(monitor, alerting, "Raises availability alerts to")
+@enduml

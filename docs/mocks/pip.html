@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Floating prayer companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* page-local layout only — all visual language comes from cenacle.css */
+
+  /* faux reading surface — calm, roomy, so the PiP stands out */
+  .reader{padding-block:var(--sp-8) var(--sp-9);max-width:66ch}
+  .reader p{color:var(--text-soft);margin-top:var(--sp-4)}
+  .reader .sacred{font-size:var(--step-3);line-height:1.35;color:var(--text);letter-spacing:-.01em}
+  .reader .sacred .v{color:var(--faint);font-family:var(--f-mono);font-size:.62em;padding-right:.5em;vertical-align:.15em}
+  .reader .ref{display:block;margin-top:var(--sp-4);font-family:var(--f-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .reader-chrome{display:flex;align-items:center;gap:var(--sp-3);color:var(--faint);font-size:.85rem;margin-bottom:var(--sp-6)}
+  .reader-chrome .bar{flex:1;height:1px;background:var(--hairline)}
+
+  /* the always-on-top floating window — fixed, strong shadow, sits over content */
+  .pip-mount{position:fixed;right:clamp(1rem,3vw,2.4rem);bottom:clamp(1rem,3vw,2.4rem);z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-3);max-width:calc(100vw - 2rem)}
+  .pip-window{position:relative}
+  /* deepen the OS-level lift beyond the component default */
+  .pip-window.is-floating{box-shadow:0 40px 90px -24px rgba(8,14,22,.55), 0 14px 40px -18px rgba(8,14,22,.45), 0 0 0 1px rgba(8,14,22,.06)}
+  .pip-titlebar .grip{display:inline-flex;align-items:center;gap:.5em;font-size:.78rem;font-weight:600;color:var(--text-soft)}
+  .pip-titlebar .grip .flame{width:1.05em;height:1.05em}
+  .pip-ctl{display:flex;align-items:center;gap:.15em}
+  .pip-iconbtn{width:1.9rem;height:1.9rem;border-radius:var(--r-sm);border:0;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer;transition:background var(--dur) var(--ease),color var(--dur) var(--ease)}
+  .pip-iconbtn:hover{background:rgba(233,215,180,.10);color:var(--text)}
+  .pip-iconbtn svg{width:1rem;height:1rem}
+  .pip-body{padding:var(--sp-3)}
+  .pip-body .tile{aspect-ratio:16/10}
+  .sky{background:radial-gradient(120% 120% at 32% 12%,#22384f,#0a1826)}
+  .pip-caption{margin-top:var(--sp-3);padding:.55rem .7rem;border-radius:var(--r-md);background:rgba(8,16,26,.72);border:1px solid var(--border)}
+  .pip-caption .cap-speaker{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink)}
+  .pip-caption .cap-text{font-size:.82rem;line-height:1.4;color:var(--text-soft);margin-top:.2em}
+  .pip-caption .cap-text .live{opacity:.5}
+  .pip-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-3)}
+  .pip-foot .lat{display:inline-flex;align-items:center;gap:.4em;font-size:.72rem;color:var(--muted)}
+  .pip-mini{width:2.3rem;height:2.3rem;border-radius:50%;border:1px solid var(--border);background:var(--raised);color:var(--text);display:grid;place-items:center;cursor:pointer;transition:transform var(--dur) var(--ease)}
+  .pip-mini:hover{transform:translateY(-2px)}
+  .pip-mini svg{width:1.05rem;height:1.05rem}
+  .pip-mini--leave{background:var(--danger);color:#fff;border-color:transparent}
+  .pip-toast{max-width:19rem}
+  .pip-toast .toast{align-items:flex-start;text-align:left;font-size:.82rem;line-height:1.4;border-radius:var(--r-md)}
+  .pip-toast .toast .flame{width:1.1em;height:1.1em;flex:none;margin-top:.1em}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ================= TOP BAR ================= -->
+<header class="topbar">
+  <div class="container">
+    <a class="brand" href="index.html">
+      <svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg>
+      Cenacle <small>upper room</small>
+    </a>
+    <nav class="hide-sm">
+      <a href="scripture.html">Scripture</a>
+      <a href="journal.html">Journal</a>
+      <a href="room-participant.html">The room</a>
+    </nav>
+    <div class="cluster gap-3">
+      <span class="pill pill--sage"><span class="dot dot--sage"></span> Reading mode</span>
+    </div>
+  </div>
+</header>
+
+<!-- ================= FAUX READING SURFACE (the context) ================= -->
+<main class="container reader">
+  <span class="eyebrow">While you read elsewhere…</span>
+
+  <div class="reader-chrome mt-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z"/><path d="M19 17H6a2 2 0 0 0-2 2"/></svg>
+    <span>Psalm 63 — a psalm of David, when he was in the wilderness</span>
+    <span class="bar"></span>
+  </div>
+
+  <div class="sacred stack gap-4">
+    <p><span class="v">1</span>O God, you are my God; earnestly I seek you; my soul thirsts for you, my flesh faints for you, as in a dry and weary land where there is no water.</p>
+    <p><span class="v">2</span>So I have looked upon you in the sanctuary, beholding your power and glory.</p>
+    <p><span class="v">3</span>Because your steadfast love is better than life, my lips will praise you.</p>
+    <span class="ref">Psalm 63:1–3 · ESV</span>
+  </div>
+
+  <p>You keep this passage open in another tab most mornings. It is the kind of reading that asks to be sat with — slowly, without the room going quiet around you.</p>
+  <p>Tonight the parish has gathered for Vespers. You did not want to close the psalm to be present, and you did not want to leave the prayer to keep reading. So you popped the gathering out. It floats now in the corner, above everything, small and steady, while the words stay in front of you.</p>
+  <p>Pastor Ade is leading. You can hear him, glance up, add your Amen — and look back down to the wilderness and the water without missing a breath.</p>
+
+  <div class="rule mt-6 mb-5"></div>
+  <p class="small muted">The window in the corner stays on top of every app and tab. Close it and the gathering returns to its full room — nothing is lost, no one is dropped.</p>
+</main>
+
+<!-- ================= FLOATING PiP COMPANION (always-on-top window) ================= -->
+<div class="pip-mount">
+
+  <!-- night-register window so its interior reads as the upper room -->
+  <div class="pip-window night is-floating" role="dialog" aria-label="Cenacle prayer companion — floating window">
+
+    <div class="pip-titlebar">
+      <span class="grip">
+        <svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg>
+        Cenacle · Vespers
+      </span>
+      <span class="pip-ctl">
+        <button class="pip-iconbtn" type="button" aria-label="Return the room to its tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="5" rx="1"/></svg>
+        </button>
+        <button class="pip-iconbtn" type="button" aria-label="Close the floating companion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </span>
+    </div>
+
+    <div class="pip-body">
+      <!-- mini host stage -->
+      <div class="tile tile--host tile--speaking">
+        <div class="tile__fill sky"></div>
+        <span class="tile__name"><span class="dot dot--ember"></span> Pastor Ade</span>
+      </div>
+
+      <!-- one-line live caption -->
+      <div class="pip-caption">
+        <span class="cap-speaker">Pastor Ade</span>
+        <p class="cap-text">…as in a dry and weary land, we bring you our thirst <span class="live">and we wait on you</span></p>
+      </div>
+
+      <!-- controls: latency · mic · leave -->
+      <div class="pip-foot">
+        <span class="lat"><span class="dot dot--live"></span> <span class="mono">312&thinsp;ms</span></span>
+        <div class="cluster gap-2">
+          <button class="pip-mini" type="button" aria-label="Mute your microphone" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/></svg>
+          </button>
+          <button class="pip-mini pip-mini--leave" type="button" aria-label="Leave the gathering">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6c6-3 12-3 18 0 .6.3 1 1 1 1.6V10c0 .8-.7 1.5-1.5 1.4l-3-.3a1.5 1.5 0 0 1-1.3-1.2l-.3-1.7c-3-1-5.8-1-8.8 0l-.3 1.7a1.5 1.5 0 0 1-1.3 1.2l-3 .3C2.7 11.5 2 10.8 2 10V7.6C2 7 2.4 6.3 3 6Z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast confirming the pinned behavior -->
+  <div class="pip-toast">
+    <div class="toast">
+      <svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg>
+      <span>Pinned above your other windows — the gathering follows you.</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+@startuml
+title UML sequence behaviour — Participant leaves and may rejoin while open
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Participant" as participant
+box "Frontend — Prayer client" #E0F2FE
+  participant "RoomLifecycleController" as lifecycle
+  participant "LeaveDialog" as leaveDlg
+  participant "RoomTransport" as transport
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+
+participant -> lifecycle : Choose Leave
+lifecycle -> leaveDlg : Show confirmation (L2-028)
+leaveDlg --> participant : You can rejoin with the same link while the room is open
+alt Participant cancels
+  participant -> leaveDlg : Cancel
+  leaveDlg --> lifecycle : Dismiss; media uninterrupted (L2-028)
+  lifecycle --> participant : Remain in the room
+else Participant confirms
+  participant -> leaveDlg : Confirm leave
+  leaveDlg -> lifecycle : confirmLeave()
+  lifecycle -> transport : Stop media and close subscription (L2-028)
+  transport -> origin : Leave room; room stays open
+  origin --> transport : Departure acknowledged
+  lifecycle --> participant : Return to landing screen
+  opt Rejoin while the room is open
+    participant -> lifecycle : Reopen the same link
+    lifecycle -> transport : Rejoin the room
+    transport -> origin : Join by the same code
+    origin --> transport : Admitted; room still open (L2-028)
+    lifecycle --> participant : Back in the gathering
+  end
+end
+@enduml

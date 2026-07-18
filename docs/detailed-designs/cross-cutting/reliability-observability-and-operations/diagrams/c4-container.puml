@@ -1,0 +1,22 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Reliability, observability, and operations
+
+Person(person, "Person in a gathering", "Hosts or joins a room")
+Person(operator, "Operator", "Responds to availability alerts")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA", "Holds ErrorBoundary, DefinedStateRouter, and TelemetryClient; resolves every failure to a defined state")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Admits publishers and subscribers; persists no media")
+  Container(monitor, "Origin monitor", "Availability probe", "Probes the Room origin's HTTP/3 reachability and raises alerts")
+}
+System_Ext(alerting, "Monitoring & alerting", "Operational sink and pager", "Receives non-identifying signals and availability checks; pages the operator")
+
+Rel(person, spa, "Uses over", "HTTPS")
+Rel(spa, origin, "Connects for live media over", "WebTransport / HTTP/3")
+Rel(spa, alerting, "Emits non-identifying operational signals to (no content, no PII)")
+Rel(monitor, origin, "Probes HTTP/3 availability of")
+Rel(monitor, alerting, "Reports availability and raises alerts to")
+Rel(alerting, operator, "Pages")
+@enduml

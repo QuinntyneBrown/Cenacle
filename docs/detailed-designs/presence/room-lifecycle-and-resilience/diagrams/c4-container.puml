@@ -1,0 +1,19 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Room lifecycle and resilience
+
+Person(host, "Host", "Ends the gathering")
+Person(participant, "Participant", "Leaves, rejoins, or reconnects")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — WebTransport", "Leave and end dialogs, reconnect overlay, and the room-full and room-not-found states")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Closes rooms, enforces capacity, and resolves room codes; persists no media")
+  ContainerDb(registry, "Room registry", "Ephemeral in-memory store", "Open rooms and their codes; frees a code when a room closes")
+}
+
+Rel(host, spa, "Ends the gathering in", "HTTPS")
+Rel(participant, spa, "Leaves, rejoins, or reconnects in", "HTTPS")
+Rel(spa, origin, "Signals leave and end and reconnects over", "WebTransport / HTTP/3")
+Rel(origin, registry, "Opens, closes, and looks up rooms in")
+@enduml

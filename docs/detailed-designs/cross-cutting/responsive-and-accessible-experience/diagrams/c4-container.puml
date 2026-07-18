@@ -1,0 +1,20 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Responsive and accessible experience
+
+Person(person, "Person", "Operates Cenacle across input modalities and viewport sizes")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA", "Hosts every screen; owns responsive layout, focus management, live regions, the visual register, and reduce-motion")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Source of the connection and reconnect status the client announces")
+}
+
+System_Ext(at, "Assistive technology", "Screen reader")
+System_Ext(platform, "Operating system / browser", "Viewport, reduce-motion, and contrast settings")
+
+Rel(person, spa, "Operates by keyboard, pointer, and screen reader", "HTTPS")
+Rel(spa, at, "Exposes roles/labels and live-region updates to", "ARIA")
+Rel(spa, platform, "Reads viewport width and reduce-motion from", "matchMedia")
+Rel(origin, spa, "Signals connection and reconnect status to", "WebTransport")
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Host a live gathering (Prayer client)
+
+Person(host, "Host", "Names the gathering, picks devices, goes live")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(setupView, "HostSetupView", "UI view", "Name field, device pickers, on-device toggles, self-preview, and Go live")
+  Component(deviceSvc, "MediaDeviceService", "Client service", "Enumerates and acquires camera and microphone via navigator.mediaDevices")
+  Component(preview, "SelfPreview", "UI component", "Renders the local video and a live microphone-level meter")
+  Component(goLive, "GoLiveController", "Client controller", "Acquires devices, configures encoding, and publishes on go-live")
+  Component(encoder, "MediaEncoder", "WebCodecs wrapper", "Encodes captured frames with VideoEncoder and AudioEncoder")
+  Component(transport, "RoomTransport", "WebTransport client", "Opens the HTTP/3 session and publishes encoded media")
+}
+
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Admits the publisher and opens the room")
+
+Rel(host, setupView, "Sets up the gathering in")
+Rel(setupView, deviceSvc, "Enumerates and acquires devices via")
+Rel(setupView, preview, "Shows the host their own feed in")
+Rel(setupView, goLive, "Invokes go-live through")
+Rel(goLive, deviceSvc, "Acquires the selected devices from")
+Rel(goLive, encoder, "Encodes captured frames with")
+Rel(goLive, transport, "Publishes through")
+Rel(encoder, transport, "Hands encoded chunks to")
+Rel(transport, origin, "Publishes media to", "WebTransport")
+@enduml

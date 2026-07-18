@@ -1,0 +1,18 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — In-room presence and controls
+
+Person(person, "Host or participant", "Operates in-room controls and sees the roster")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — WebCodecs, WebTransport, on-device Prompt API", "Renders the live room, its dock, roster, captions, and companion rail")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Relays media and presence changes within the one room; persists no media")
+  Container(registry, "Room registry", "Ephemeral in-memory store", "Open rooms and their codes; no media persisted")
+}
+
+Rel(person, spa, "Operates in-room controls in", "HTTPS")
+Rel(spa, origin, "Publishes media and signals mute/camera presence to", "WebTransport / HTTP/3")
+Rel(origin, spa, "Relays other participants' presence changes to", "WebTransport / HTTP/3")
+Rel(origin, registry, "Resolves the open room in")
+@enduml

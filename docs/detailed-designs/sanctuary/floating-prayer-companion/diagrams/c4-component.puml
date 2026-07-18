@@ -1,0 +1,28 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Floating prayer companion (Prayer client)
+
+Person(person, "Participant", "Opens and returns the floating companion")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(roomView, "RoomView", "UI view", "Full in-room stage, filmstrip, and dock; offers the floating companion control")
+  Component(controller, "FloatingCompanionController", "Client controller", "Feature-detects documentPictureInPicture, opens the window, and moves the stage and controls between tab and window")
+  Component(pipView, "PipView", "UI view", "Compact floating UI — one-line caption, latency readout, mute, and leave; hosts the moved host-stage surface")
+  Component(session, "RoomSession", "Client session state", "Holds the live transport, render surfaces, presence roster, mute, and camera state across the move")
+  Component(transport, "RoomTransport", "WebTransport client", "Maintains the HTTP/3 media session to the room origin")
+}
+
+System_Ext(browser, "Browser — Document Picture-in-Picture", "Provides the always-on-top window")
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Relays the room's live media")
+
+Rel(person, roomView, "Opens the floating companion from")
+Rel(roomView, controller, "Requests pop and return through")
+Rel(controller, browser, "Requests an always-on-top window via", "documentPictureInPicture")
+Rel(controller, pipView, "Renders the compact companion as")
+Rel(controller, session, "Reads and preserves state through")
+Rel(pipView, session, "Reads caption, latency, mute, and camera from")
+Rel(roomView, session, "Reads and renders from")
+Rel(session, transport, "Sends and receives media over")
+Rel(transport, origin, "Maintains the live media session with", "WebTransport")
+@enduml

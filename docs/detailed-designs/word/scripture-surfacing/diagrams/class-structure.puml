@@ -1,0 +1,65 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Scripture surfacing
+
+class ThemeInput {
+  +text: string
+  +chips: string[]
+  +selectChip(theme: string): void
+  +submit(): string
+}
+
+class ScriptureView {
+  +surface(theme: string): void
+  +surfaceAnother(): void
+  +readInContext(passage: Passage): void
+  +save(passage: Passage): void
+}
+
+class PassageMatcher {
+  +surface(theme: string, exclude: string[]): MatchResult
+}
+
+class MatchResult {
+  +matched: boolean
+  +passage: Passage
+  +suggestions: string[]
+}
+
+class Passage {
+  +reference: string
+  +text: string
+  +themes: string[]
+}
+
+class VerseIndex {
+  +lookup(theme: string): Passage[]
+}
+
+class LocalStore {
+  +addRecentTheme(theme: string): void
+  +recentThemes(): string[]
+  +savePassage(passage: Passage): void
+  +savedPassages(): Passage[]
+}
+
+ScriptureView --> ThemeInput : has
+ScriptureView ..> PassageMatcher : requests passage from
+ScriptureView --> LocalStore : records recent and saves through
+PassageMatcher ..> VerseIndex : retrieves from
+PassageMatcher --> MatchResult : produces
+MatchResult o-- "0..1" Passage : carries
+VerseIndex o-- "*" Passage : holds
+LocalStore o-- "*" Passage : stores saved
+@enduml

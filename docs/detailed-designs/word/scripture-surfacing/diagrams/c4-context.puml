@@ -1,0 +1,10 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Scripture surfacing
+
+Person(person, "Person", "Names a theme in plain words and receives a fitting passage")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; surfaces a passage from an on-device verse index with zero outbound requests")
+
+Rel(person, cenacle, "Names a theme and receives a passage from, entirely on-device", "no network")
+@enduml

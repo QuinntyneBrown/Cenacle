@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Camera &amp; mic blocked</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* page-local layout only */
+  .howto{text-align:left;margin-block:var(--sp-5)}
+  .howto ol{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--sp-3)}
+  .howto li{display:flex;align-items:flex-start;gap:var(--sp-3)}
+  .howto .n{flex:none;width:1.7rem;height:1.7rem;border-radius:50%;display:grid;place-items:center;border:1px solid var(--border-strong);color:var(--accent-ink)}
+</style>
+</head>
+<body class="night">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<main class="state">
+  <div class="state__inner">
+
+    <div class="state__mark state__mark--danger">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 10l4.5-2.6v9.2L15 14M4 7h9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/><path d="M3 3l18 18"/></svg>
+    </div>
+
+    <h1>The room can't see or hear you yet</h1>
+    <p>Camera and mic are blocked for this tab. Allow them to join Vespers.</p>
+
+    <div class="howto">
+      <div class="card">
+        <ol>
+          <li><span class="n mono">1</span><span>Click the camera icon in your address bar</span></li>
+          <li><span class="n mono">2</span><span>Choose <strong>Allow</strong></span></li>
+          <li><span class="n mono">3</span><span>Try again</span></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="cluster">
+      <a class="btn btn--primary" href="lobby.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 8a8 8 0 1 0 .8 6M20 4v4h-4"/></svg>
+        Try again
+      </a>
+      <a class="btn btn--ghost" href="room-participant.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 10l4.5-2.6v9.2L15 14M4 7h9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/><path d="M3 3l18 18"/></svg>
+        Join with camera off
+      </a>
+    </div>
+
+    <p class="small muted mt-5" style="margin-bottom:0">Audio-only is welcome here. A whispered prayer still counts.</p>
+
+  </div>
+</main>
+
+</body>
+</html>

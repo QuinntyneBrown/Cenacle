@@ -1,0 +1,72 @@
+@startuml
+title UML sequence behaviour — Origin unavailability and recovery
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person in a gathering" as person
+actor "Operator" as operator
+box "Frontend — Prayer client" #E0F2FE
+  participant "Feature view" as view
+  participant "RoomTransport" as transport
+  participant "DefinedStateRouter" as router
+  participant "TelemetryClient" as telemetry
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+box "Backend — Operations (monitoring)" #FFF4E5
+  participant "Origin monitor" as monitor
+  participant "Monitoring & alerting" as mon
+end box
+
+group Continuous availability monitoring (L2-088)
+  monitor -> origin : Probe HTTP/3 / WebTransport reachability
+  alt Origin reachable
+    origin --> monitor : Reachable
+  else Origin unreachable
+    origin --> monitor : Unreachable
+    monitor -> mon : Raise availability alert
+    mon -> operator : Page operator
+  end
+end
+
+person -> view : Host or join a gathering
+view -> transport : Open WebTransport session to Room origin
+transport -> origin : Establish HTTP/3 session
+alt Origin unreachable at connect
+  origin --> transport : Connection fails
+  transport -> router : Route transport failure (L2-088)
+  router --> view : Connection-error state with a retry path (not blank)
+  view -> telemetry : Record connect-failure signal — no content, no PII (L2-087)
+  view --> person : Clear connection error + "Try again"
+  person -> view : Retry
+else Origin reachable
+  origin --> transport : Session established
+  transport --> view : Connected — proceed into the room
+end
+
+group In-room origin disruption (L2-088)
+  origin --> transport : Session drops (in-room disruption)
+  transport -> router : Route transport drop to reconnect (L2-030)
+  router --> view : Reconnecting overlay; pause outbound media (L2-030)
+  alt Reconnect succeeds
+    transport -> origin : Re-establish HTTP/3 session
+    origin --> transport : Restored
+    transport --> view : Dismiss overlay; restore prior mute and camera state (L2-030)
+  else Person leaves during reconnect
+    person -> view : Leave room
+    view --> person : Exit cleanly to the landing screen (L2-030)
+  end
+end
+@enduml

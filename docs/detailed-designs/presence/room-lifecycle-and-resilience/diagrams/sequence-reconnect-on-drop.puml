@@ -1,0 +1,51 @@
+@startuml
+title UML sequence behaviour — Reconnect on a dropped connection
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Participant" as participant
+box "Frontend — Prayer client" #E0F2FE
+  participant "RoomTransport" as transport
+  participant "RoomLifecycleController" as lifecycle
+  participant "ReconnectOverlay" as overlay
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+
+transport -> lifecycle : onConnectionDropped() — drop detected
+lifecycle -> transport : pauseOutbound() — pause camera and microphone (L2-030)
+lifecycle -> overlay : show() — reconnecting overlay; offer Leave (L2-030)
+overlay --> participant : Reconnecting… — attempts and last stable latency (L2-013)
+alt Reconnection succeeds
+  loop Retry with visible attempts
+    lifecycle -> transport : reconnect(attempt)
+    transport -> origin : Re-establish HTTP/3 session
+    origin --> transport : Attempt result
+    transport --> lifecycle : Restored or failed
+    lifecycle -> overlay : update(attempt, lastLatencyMs) (L2-030)
+    overlay --> participant : Show attempt progress and last latency
+  end
+  transport --> lifecycle : onReconnected()
+  lifecycle -> transport : resumeOutbound() — restore prior mute and camera state (L2-030)
+  lifecycle -> overlay : dismiss()
+  overlay --> participant : Overlay dismissed; presence restored
+else Person chooses Leave during reconnect
+  participant -> overlay : Choose "Leave room"
+  overlay -> lifecycle : Leave
+  lifecycle -> transport : close()
+  transport -> origin : Disconnect
+  lifecycle --> participant : Return to landing screen (L2-030)
+end
+@enduml

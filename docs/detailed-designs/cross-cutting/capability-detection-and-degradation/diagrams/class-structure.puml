@@ -1,0 +1,107 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Capability detection and graceful degradation
+
+enum Capability {
+  WebTransport
+  WebCodecs
+  WebGPU
+  OnDeviceAI
+}
+
+enum CapabilityState {
+  Available
+  Unavailable
+}
+
+enum PresenceDecision {
+  Live
+  Unsupported
+}
+
+enum WordDecision {
+  Enabled
+  Hidden
+}
+
+enum SanctuaryDecision {
+  GpuBackdrop
+  StillBackdrop
+}
+
+enum RecoveryState {
+  PermissionBlocked
+  DeviceInUse
+}
+
+class CapabilityDetector {
+  +detect(): CapabilityReport
+  -probeWebTransport(): CapabilityState
+  -probeWebCodecs(): CapabilityState
+  -probeWebGPU(): CapabilityState
+  -probeOnDeviceAI(): CapabilityState
+}
+
+class CapabilityReport {
+  +stateOf(capability: Capability): CapabilityState
+  +presenceReady(): boolean
+  +wordReady(): boolean
+  +visualsReady(): boolean
+  +availableCount(): number
+}
+
+class DegradationPolicy {
+  +evaluate(report: CapabilityReport): DegradationPlan
+}
+
+class DegradationPlan {
+  +presence: PresenceDecision
+  +word: WordDecision
+  +sanctuary: SanctuaryDecision
+}
+
+class AppShell {
+  -plan: DegradationPlan
+  +bootstrap(): void
+}
+
+class SupportMatrixView {
+  +render(report: CapabilityReport): void
+}
+
+class DeviceRecoveryResolver {
+  +resolve(error: DOMException): RecoveryState
+  +joinWithCameraOff(): MediaStream
+}
+
+class GoLiveController {
+  +start(plan: DegradationPlan): void
+}
+
+CapabilityDetector ..> Capability : probes
+CapabilityDetector ..> CapabilityReport : produces
+CapabilityReport --> CapabilityState : maps each Capability to
+DegradationPolicy ..> CapabilityReport : reads
+DegradationPolicy ..> DegradationPlan : produces
+DegradationPlan --> PresenceDecision : has
+DegradationPlan --> WordDecision : has
+DegradationPlan --> SanctuaryDecision : has
+AppShell ..> CapabilityDetector : runs at init
+AppShell ..> DegradationPolicy : evaluates through
+AppShell --> DegradationPlan : holds
+SupportMatrixView ..> CapabilityReport : renders
+GoLiveController ..> DegradationPlan : reads the presence decision
+GoLiveController ..> DeviceRecoveryResolver : delegates device errors to
+DeviceRecoveryResolver ..> RecoveryState : produces
+@enduml

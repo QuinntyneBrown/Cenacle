@@ -1,0 +1,18 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Privacy by architecture
+
+Person(person, "Person at prayer", "Uses the private companion and the live gathering")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — Prompt API, IndexedDB", "Runs private Word actions and holds private content on the device; the privacy boundary lives here")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Relays live presence media within a room; persists no media and offers no recording (L2-071)")
+}
+
+System_Ext(cloudai, "Off-device AI / analytics", "Cloud inference or analytics endpoint")
+
+Rel(person, spa, "Writes, reflects, and prays in", "HTTPS")
+Rel(spa, origin, "Publishes live presence media to (public within the room)", "WebTransport / HTTP/3")
+Rel(spa, cloudai, "Sends no journal, reflection, theme, or caption data to; CSP connect-src excludes it (L2-070)", "blocked")
+@enduml

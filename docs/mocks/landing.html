@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — The upper room, in a browser tab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* page-local layout only — all visual language comes from cenacle.css */
+  .hero{padding-block:var(--sp-8) var(--sp-7)}
+  .hero__grid{display:grid;gap:var(--sp-7);align-items:center}
+  @media(min-width:900px){.hero__grid{grid-template-columns:1.02fr .98fr}}
+  .hero h1{font-size:var(--step-6);margin-block:var(--sp-4) var(--sp-5)}
+  .window{position:relative;border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-lg);border:1px solid var(--border-strong)}
+  .window .stage{border-radius:0;border:0}
+  .window .stage-inner{position:relative;z-index:1;padding:var(--sp-4)}
+  .demo-tiles{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+  .demo-readout{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-3);flex-wrap:wrap}
+  .sky{background:radial-gradient(120% 120% at 30% 10%,#20364e,#0c1a29)}
+  .sky2{background:radial-gradient(120% 120% at 70% 20%,#2a2033,#0c1a29)}
+  .subsys{border-top:1px solid var(--hairline)}
+  .slice-row{display:grid;gap:var(--sp-3);padding-block:var(--sp-4);border-bottom:1px solid var(--hairline)}
+  @media(min-width:720px){.slice-row{grid-template-columns:auto 1fr 1.3fr auto;align-items:baseline}}
+  .slice-id{font-family:var(--f-mono);color:var(--accent-ink);font-weight:700}
+  .wow{color:var(--text-soft);font-style:italic;font-family:var(--f-sacred)}
+  .marquee-word{font-family:var(--f-display);font-weight:700;font-size:var(--step-5);letter-spacing:-.03em;line-height:1}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ================= TOP BAR ================= -->
+<header class="topbar">
+  <div class="container">
+    <a class="brand" href="index.html">
+      <svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg>
+      Cenacle <small>upper room</small>
+    </a>
+    <nav class="hide-sm">
+      <a href="#presence">Presence</a>
+      <a href="#word">Word</a>
+      <a href="#sanctuary">Sanctuary</a>
+      <a href="#privacy">Privacy</a>
+    </nav>
+    <div class="cluster gap-3">
+      <a class="btn btn--quiet btn--sm" href="dialog-join-room.html">Join a room</a>
+      <a class="btn btn--primary btn--sm" href="create-room.html">Host a room</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="container hero__grid">
+    <div>
+      <span class="eyebrow">Acts 2 · all together in one place</span>
+      <h1 class="display">The upper room,<br>now a <span class="emph">browser tab</span>.</h1>
+      <p class="lede">Cenacle is a gathering space where believers pray together with the immediacy of being in the same room — and where what's spoken to God stays between you and God.</p>
+      <div class="cluster gap-3 mt-6">
+        <a class="btn btn--primary btn--lg" href="create-room.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 10l4.5-2.6v9.2L15 14M4 7h9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/></svg>
+          Host a room
+        </a>
+        <a class="btn btn--ghost btn--lg" href="dialog-join-room.html">Join with a code</a>
+      </div>
+      <div class="cluster gap-4 mt-6">
+        <span class="pill"><span class="dot dot--live"></span> Sub-second presence</span>
+        <span class="pill pill--sage"><span class="dot dot--sage"></span> Nothing leaves your device</span>
+      </div>
+    </div>
+
+    <!-- Live presence, framed as a window: the thesis, shown not told -->
+    <figure class="window night">
+      <div class="stage" style="border-radius:0">
+        <div class="stage__glow"></div>
+        <div class="stage-inner">
+          <div class="between mb-4">
+            <span class="pill"><span class="dot dot--live"></span> Live · Vespers</span>
+            <span class="seal"><span class="seal__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="mono">0 requests out</span></span>
+          </div>
+          <div class="demo-tiles">
+            <div class="tile tile--host tile--speaking"><div class="tile__fill sky"></div><span class="tile__name"><span class="dot dot--ember"></span> Pastor Ade</span></div>
+            <div class="tile"><div class="tile__fill sky2"></div><span class="tile__name">Maria</span>
+              <div class="amen-rail"><span class="mote">🔥</span></div>
+            </div>
+          </div>
+          <div class="demo-readout">
+            <span class="assent">🙌 6 amen</span>
+            <span class="pill"><span class="mono">312&thinsp;ms</span> glass-to-glass</span>
+          </div>
+        </div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ================= THE WOW STRIP ================= -->
+<section class="section" style="padding-block:var(--sp-6)">
+  <div class="container">
+    <div class="card card--raised" style="display:grid;gap:var(--sp-5)">
+      <div class="cluster between">
+        <p class="h3" style="max-width:30ch">Two things that make people say <span class="wow">"wait — this is just a browser?"</span></p>
+        <span class="tag">no plugin · no app · no install</span>
+      </div>
+      <div class="grid cols-2">
+        <div class="banner banner--warn">
+          <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg></span>
+          <div><p class="banner__title">A feed faster than your work calls</p><p class="muted small">WebCodecs over WebTransport lands below the WebRTC jitter buffer. Clap on camera; it registers on the other screen with no perceptible lag.</p></div>
+        </div>
+        <div class="banner banner--sage">
+          <span class="glyph glyph--sage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+          <div><p class="banner__title">An AI you can be honest with</p><p class="muted small">Reflections, transcripts, and Scripture run on-device with Gemini Nano. Open the Network panel and watch: zero requests go out. It can't leak — by architecture.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SUBSYSTEMS: 9 SLICES ================= -->
+<section class="section subsys" id="presence">
+  <div class="container">
+    <div class="between mb-5">
+      <div>
+        <span class="eyebrow">Subsystem A</span>
+        <h2 class="h2 mt-3">Presence <span class="muted" style="font-weight:400">— the live gathering</span></h2>
+      </div>
+      <span class="tag">getUserMedia · WebCodecs · WebTransport</span>
+    </div>
+    <div>
+      <div class="slice-row"><span class="slice-id">A1</span><strong>Host a room</strong><span class="muted">One tab becomes a broadcast origin — capture, encode, publish. No encoder software, no RTMP.</span><a class="linkline small" href="create-room.html">Open</a></div>
+      <div class="slice-row"><span class="slice-id">A2</span><strong>Join a room</strong><span class="muted">Pull the stream, decode, render with frame-accurate sync. It feels co-located, not buffered.</span><a class="linkline small" href="lobby.html">Open</a></div>
+      <div class="slice-row"><span class="slice-id">A3</span><strong>Corporate "Amen"</strong><span class="muted">Reactions sent as datagrams, surfaced to everyone near-instantly. The room responds as one.</span><a class="linkline small" href="room-host.html">Open</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="section subsys" id="word" style="padding-top:0">
+  <div class="container">
+    <div class="between mb-5">
+      <div>
+        <span class="eyebrow">Subsystem B</span>
+        <h2 class="h2 mt-3">Word <span class="muted" style="font-weight:400">— the private companion</span></h2>
+      </div>
+      <span class="tag">Prompt API · Gemini Nano · on-device</span>
+    </div>
+    <div>
+      <div class="slice-row"><span class="slice-id">B1</span><strong>Scripture surfacing</strong><span class="muted">Name a theme — "fear," "gratitude for provision" — and a fitting passage surfaces. Instant, offline.</span><a class="linkline small" href="scripture.html">Open</a></div>
+      <div class="slice-row"><span class="slice-id">B2</span><strong>Private lament journal</strong><span class="muted">Write freely; receive a gentle, grounded reflection. The text is never transmitted.</span><a class="linkline small" href="journal.html">Open</a></div>
+      <div class="slice-row"><span class="slice-id">B3</span><strong>Live captions</strong><span class="muted">On-device transcription of the spoken prayer — so even the transcript stays private.</span><a class="linkline small" href="room-participant.html">Open</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="section subsys" id="sanctuary" style="padding-top:0">
+  <div class="container">
+    <div class="between mb-5">
+      <div>
+        <span class="eyebrow">Subsystem C</span>
+        <h2 class="h2 mt-3">Sanctuary <span class="muted" style="font-weight:400">— the ambient space</span></h2>
+      </div>
+      <span class="tag">WebGPU · Document Picture-in-Picture</span>
+    </div>
+    <div>
+      <div class="slice-row"><span class="slice-id">C1</span><strong>Ambient visuals</strong><span class="muted">A GPU-rendered atmosphere — light, depth, motion — instead of a flat black frame. 60fps in a tab.</span><a class="linkline small" href="room-host.html">Open</a></div>
+      <div class="slice-row"><span class="slice-id">C2</span><strong>Audio-reactive worship</strong><span class="muted">Amplitude and frequency drive the shader. The room breathes with the music.</span><a class="linkline small" href="room-participant.html">Open</a></div>
+      <div class="slice-row"><span class="slice-id">C3</span><strong>Floating prayer companion</strong><span class="muted">Document PiP pops the room into an always-on-top window. The gathering follows you.</span><a class="linkline small" href="pip.html">Open</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRIVACY ================= -->
+<section class="section" id="privacy">
+  <div class="container container-narrow tc">
+    <span class="eyebrow is-plain" style="justify-content:center">Privacy by architecture</span>
+    <blockquote class="verse mt-5" style="text-align:left;display:inline-block">
+      A user writes something in the lament journal they'd never type into a cloud app — and understands why they safely can.
+      <span class="ref">Cenacle · success signal, v1</span>
+    </blockquote>
+    <p class="lede mt-5" style="margin-inline:auto">For lament and confession, privacy is the whole point. Where a device can't run the on-device model, those features are hidden — never quietly rerouted to a server. We degrade; we don't reroute.</p>
+    <div class="center mt-6"><span class="seal"><span class="seal__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span> <b>On-device</b> — nothing transmitted <span class="mono">· verify in DevTools</span></span></div>
+  </div>
+</section>
+
+<!-- ================= CLOSE ================= -->
+<section class="section">
+  <div class="container">
+    <div class="card card--raised tc" style="padding-block:var(--sp-7)">
+      <p class="marquee-word">Cen<span class="tongue">a</span>cle</p>
+      <p class="lede mt-4" style="margin-inline:auto">Open a room. Invite one other device. Clap — and watch it land with no lag.</p>
+      <div class="cluster gap-3 mt-6" style="justify-content:center">
+        <a class="btn btn--primary btn--lg" href="create-room.html">Host a room</a>
+        <a class="btn btn--ghost btn--lg" href="dialog-join-room.html">Join with a code</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container between" style="flex-wrap:wrap;gap:var(--sp-4)">
+    <a class="brand" href="index.html" style="font-size:1rem"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg> Cenacle</a>
+    <p class="small muted">A small gathered room. Presence over polish. Privacy by architecture.</p>
+    <nav class="cluster gap-4 small"><a href="index.html">All screens</a><a href="settings.html">Settings</a><a href="error-unsupported-browser.html">Requirements</a></nav>
+  </div>
+</footer>
+
+</body>
+</html>

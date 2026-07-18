@@ -1,0 +1,55 @@
+@startuml
+title UML sequence behaviour — Render ambient with fallback
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person in the gathering" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "SanctuaryLayer" as layer
+  participant "VisualsSettings" as settings
+  participant "ReduceMotion" as reduce
+  participant "WebGpuProbe" as gpu
+  participant "SanctuaryRenderer" as renderer
+  participant "StillBackdrop" as backdrop
+  database "On-device store" as store
+end box
+
+person -> layer : Enter the room (room load)
+layer -> settings : Read the ambient-visuals toggle
+settings -> store : Load "sanctuary.visualsEnabled" (L2-053)
+store --> settings : Stored value (default on)
+settings --> layer : visualsEnabled
+alt Visuals disabled (L2-052, L2-053)
+  layer -> backdrop : Show calm still background
+  backdrop --> person : Still sanctuary behind the stage
+else Visuals enabled
+  layer -> reduce : Reduced-motion preference set?
+  reduce --> layer : prefers-reduced-motion
+  alt Reduce-motion set (L2-053)
+    layer -> backdrop : Show still background, motion reduced automatically
+    backdrop --> person : Still sanctuary behind the stage
+  else Motion allowed
+    layer -> gpu : WebGPU available?
+    gpu --> layer : navigator.gpu present or absent
+    alt WebGPU unavailable (L2-067)
+      layer -> backdrop : Fall back automatically, make no requests
+      backdrop --> person : Still sanctuary behind the stage
+    else WebGPU available
+      layer -> renderer : Start the GPU atmosphere behind the stage (L2-052)
+      renderer -> renderer : Render loop ~60fps, not blocking presence (L2-052)
+      renderer --> person : Living ambient sanctuary behind the stage
+    end
+  end
+end
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Invitations and room access
+
+Person(host, "Host", "Opens Invite and copies the artifacts")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — Clipboard API, on-device QR", "Renders the invite artifacts and copies them")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Opens rooms and generates the room code")
+  ContainerDb(registry, "Room registry", "Ephemeral in-memory store", "Open rooms and their codes; no media persisted")
+}
+
+Rel(host, spa, "Opens Invite and copies the link and code in", "HTTPS")
+Rel(spa, origin, "Received the room code from at room open", "WebTransport / HTTP/3")
+Rel(origin, registry, "Generates and reserves the unique code in (L2-027)")
+@enduml

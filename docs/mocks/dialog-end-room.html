@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — End the gathering?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* page-local layout only — simplified room backdrop behind the scrim */
+  html,body{height:100%}
+  .roombg{position:fixed;inset:0;z-index:0;display:flex;flex-direction:column;overflow:hidden}
+  .roombg__bar{flex:none;height:60px;border-bottom:1px solid var(--hairline);display:flex;align-items:center;justify-content:space-between;padding-inline:var(--sp-5);background:color-mix(in srgb,var(--bg) 70%,transparent)}
+  .roombg__stage{flex:1;margin:var(--sp-5);border-radius:var(--r-xl);border:1px solid var(--border);position:relative;overflow:hidden;background:linear-gradient(160deg,#13273c,#0a1420);box-shadow:var(--shadow-lg)}
+  .roombg__glow{position:absolute;inset:0;background:radial-gradient(55% 65% at 50% 34%,rgba(228,146,58,.20),transparent 72%);animation:breathe 11s var(--ease) infinite}
+  .roombg__fill{position:absolute;inset:0;background:radial-gradient(120% 120% at 40% 20%,#28405a,#0c1a29)}
+  .title--danger{color:var(--danger)}
+</style>
+</head>
+<body class="night">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ===== simplified room backdrop (the screen this dialog belongs to) ===== -->
+<div class="roombg" aria-hidden="true">
+  <div class="roombg__bar">
+    <a class="brand" href="index.html" style="font-size:1.05rem"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg></a>
+    <span class="pill"><span class="dot dot--live"></span> Live · <span class="mono">7 present</span></span>
+  </div>
+  <div class="roombg__stage">
+    <div class="roombg__glow"></div>
+    <div class="roombg__fill"></div>
+    <span class="tile__name" style="left:var(--sp-4);bottom:var(--sp-4)"><span class="dot dot--ember"></span> Pastor Ade · <span class="mono" style="font-size:.75rem">you</span></span>
+  </div>
+</div>
+
+<!-- ===== confirmation dialog ===== -->
+<div class="scrim" role="dialog" aria-modal="true" aria-labelledby="end-title" aria-describedby="end-body" style="z-index:80">
+  <div class="dialog dialog--sheet">
+    <a class="dialog__close" href="room-host.html" aria-label="Close and keep praying">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </a>
+
+    <div class="dialog__head">
+      <h2 class="dialog__title title--danger" id="end-title">End the gathering for everyone?</h2>
+    </div>
+
+    <div class="dialog__body stack gap-4" id="end-body">
+      <p>This closes the room for all <span class="mono">7</span> people. The same link won’t reopen it — you’ll each need a fresh invite to gather again.</p>
+      <p class="hint">Your private journal and anything kept on-device stay with you. Nothing here is deleted.</p>
+    </div>
+
+    <div class="dialog__foot">
+      <a class="btn btn--quiet" href="room-host.html">Keep praying</a>
+      <a class="btn btn--danger-solid" href="landing.html">End gathering</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

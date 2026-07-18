@@ -1,0 +1,48 @@
+@startuml
+title UML sequence behaviour — Dialog focus trap and restore
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Keyboard user" as user
+box "Frontend — Prayer client" #E0F2FE
+  participant "Opener control" as opener
+  participant "AccessibleDialog" as dialog
+  participant "FocusManager" as focus
+end box
+box "Platform — Browser DOM" #FFF4E5
+  participant "Document focus" as doc
+end box
+
+user -> opener : Activate on Enter/Space (L2-082)
+opener -> dialog : open(opener)
+dialog -> dialog : Mount with role dialog/alertdialog and labelled title (L2-083)
+dialog -> focus : trap(dialogElement, opener)
+focus -> doc : Record the opener as the element to restore
+focus -> doc : Move focus to the first focusable control in the dialog (L2-082)
+doc --> user : Focus visible on the first control
+
+group Focus trapped while open
+  alt Tab or Shift+Tab reaches the boundary
+    user -> focus : Tab / Shift+Tab at the first or last control
+    focus -> doc : Wrap focus to the other end, inside the dialog (L2-082)
+    doc --> user : Focus stays within the dialog
+  end
+end
+
+user -> dialog : Press Escape (L2-082)
+dialog -> dialog : Close via the cancel/close path
+dialog -> focus : release()
+focus -> doc : Restore focus to the recorded opener (L2-082)
+doc --> user : Focus returned to the opener control
+@enduml

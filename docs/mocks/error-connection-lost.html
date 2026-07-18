@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Reconnecting to Vespers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  html,body{height:100%}
+  /* dimmed room behind the overlay — reuses the room-host stage structure */
+  .app{display:flex;flex-direction:column;height:100vh;overflow:hidden;filter:saturate(.7) brightness(.72);pointer-events:none}
+  .app__bar{flex:none;border-bottom:1px solid var(--hairline);background:color-mix(in srgb,var(--bg) 70%,transparent)}
+  .app__bar .inner{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);height:60px;padding-inline:var(--sp-5)}
+  .stagewrap{flex:1;min-height:0;padding:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-4)}
+  .stage-main{position:relative;flex:1;min-height:0;border-radius:var(--r-xl);overflow:hidden;border:1px solid var(--border);background:linear-gradient(160deg,#13273c,#0a1420)}
+  .stage-main .glow{position:absolute;inset:0;background:radial-gradient(55% 65% at 50% 34%,rgba(228,146,58,.18),transparent 72%)}
+  .host-fill{position:absolute;inset:0;background:radial-gradient(120% 120% at 40% 20%,#28405a,#0c1a29)}
+  .filmstrip{flex:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-3)}
+  .filmstrip .tile{aspect-ratio:16/10}
+
+  /* reconnect card inside the overlay */
+  .reconnect{max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);padding:var(--sp-6);text-align:center}
+  .reconnect .mark{width:4.4rem;height:4.4rem;margin:0 auto var(--sp-5);border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+  .reconnect .mark .flame{width:2rem;height:2rem;animation:breathe 2.6s var(--ease) infinite}
+  .reconnect h1{font-family:var(--f-display);font-weight:600;font-size:var(--step-2);letter-spacing:-.02em;line-height:1.15;margin-bottom:var(--sp-3)}
+  .reconnect p{color:var(--text-soft);margin-bottom:var(--sp-5)}
+  .reconnect .meta{justify-content:center;margin-bottom:var(--sp-5)}
+</style>
+</head>
+<body class="night">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ===== ROOM BEHIND (dimmed, non-interactive) ===== -->
+<div class="app" aria-hidden="true">
+  <header class="app__bar">
+    <div class="inner">
+      <div class="cluster gap-4">
+        <a class="brand" href="index.html" style="font-size:1.05rem"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg></a>
+        <span class="rule" style="width:1px;height:24px"></span>
+        <div class="cluster gap-2"><strong>Vespers</strong><span class="pill"><span class="dot"></span> Reconnecting</span></div>
+      </div>
+      <div class="cluster gap-3">
+        <span class="pill"><span class="mono">— ms</span> · 7 present</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="stagewrap">
+    <div class="stage-main">
+      <div class="glow"></div>
+      <div class="host-fill"></div>
+      <span class="tile__name" style="left:var(--sp-4);bottom:var(--sp-4);font-size:.95rem"><span class="dot dot--ember"></span> Pastor Ade · <span class="mono" style="font-size:.75rem">host</span></span>
+    </div>
+    <div class="filmstrip">
+      <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 30% 20%,#2a2033,#0c1a29)"></div><span class="tile__name">Maria</span></div>
+      <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 60% 30%,#20364e,#0c1a29)"></div><span class="tile__name">Josiah</span></div>
+      <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 40% 40%,#1c3340,#0c1a29)"></div><span class="tile__name">Grace</span></div>
+      <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 70% 20%,#2b2a44,#0c1a29)"></div><span class="tile__name">Daniel</span></div>
+      <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 30% 60%,#25324a,#0c1a29)"></div><span class="tile__name">Ruth</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RECONNECT OVERLAY ===== -->
+<div class="overlay" role="alertdialog" aria-modal="true" aria-labelledby="rc-title" aria-describedby="rc-desc">
+  <div class="reconnect">
+    <div class="mark">
+      <svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg>
+    </div>
+    <h1 id="rc-title">Reconnecting to Vespers…</h1>
+    <p id="rc-desc">Your connection dropped. We're rejoining the room — your camera and mic are paused so nothing broadcasts while you're away.</p>
+
+    <div class="cluster meta">
+      <span class="pill pill--accent">Attempt 2</span>
+      <span class="mono muted small">last stable · 312&thinsp;ms</span>
+    </div>
+
+    <div class="progress mb-5" role="progressbar" aria-label="Reconnecting">
+      <div class="progress__bar" style="width:30%"></div>
+    </div>
+
+    <div class="cluster center">
+      <a class="btn btn--quiet" href="landing.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6c6-3 12-3 18 0 .6.3 1 1 1 1.6V10c0 .8-.7 1.5-1.5 1.4l-3-.3a1.5 1.5 0 0 1-1.3-1.2l-.3-1.7c-3-1-5.8-1-8.8 0l-.3 1.7a1.5 1.5 0 0 1-1.3 1.2l-3 .3C2.7 11.5 2 10.8 2 10V7.6C2 7 2.4 6.3 3 6Z"/></svg>
+        Leave room
+      </a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

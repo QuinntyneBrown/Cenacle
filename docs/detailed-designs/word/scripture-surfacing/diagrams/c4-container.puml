@@ -1,0 +1,17 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Scripture surfacing
+
+Person(person, "Person", "Names a theme and reads the surfaced passage")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA", "Scripture surfacing UI and on-device passage retrieval")
+  ContainerDb(verseIndex, "Verse index", "On-device passage store", "Passages keyed by theme; read-only, retrieved never generated")
+  ContainerDb(localStore, "Local store", "IndexedDB / localStorage", "Recent themes and saved passages; origin-scoped, clearable")
+}
+
+Rel(person, spa, "Names a theme in", "HTTPS, app shell only")
+Rel(spa, verseIndex, "Matches the theme against and retrieves a passage from", "on-device, no network")
+Rel(spa, localStore, "Records recent themes and saves passages in", "on-device")
+@enduml

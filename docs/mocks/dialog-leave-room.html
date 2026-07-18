@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Leave Vespers?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* page-local layout only: simplified room backdrop behind the scrim */
+  html,body{height:100%}
+  .room{position:fixed;inset:0;z-index:0;padding:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-4);filter:blur(2px);pointer-events:none;user-select:none}
+  .room__bar{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);height:60px}
+  .room__stage{flex:1;position:relative;border-radius:var(--r-xl);overflow:hidden;border:1px solid var(--border);background:linear-gradient(160deg,#13273c,#0a1420);box-shadow:var(--shadow-lg)}
+  .room__stage .glow{position:absolute;inset:0;background:radial-gradient(55% 65% at 50% 34%,rgba(228,146,58,.20),transparent 72%)}
+  .room__fill{position:absolute;inset:0;background:radial-gradient(120% 120% at 40% 20%,#28405a,#0c1a29)}
+  .room__strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-3)}
+  .room__strip .tile{aspect-ratio:16/10}
+</style>
+</head>
+<body class="night">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ===== simplified room behind the scrim ===== -->
+<div class="room" aria-hidden="true">
+  <div class="room__bar">
+    <div class="cluster gap-4">
+      <a class="brand" href="index.html" style="font-size:1.05rem"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg></a>
+      <span class="rule" style="width:1px;height:24px"></span>
+      <div class="cluster gap-2"><strong>Vespers</strong><span class="pill"><span class="dot dot--live"></span> Live</span></div>
+    </div>
+    <span class="pill"><span class="mono">312&thinsp;ms</span> · 7 present</span>
+  </div>
+  <div class="room__stage">
+    <div class="glow"></div>
+    <div class="room__fill"></div>
+    <span class="tile__name" style="left:var(--sp-4);bottom:var(--sp-4);font-size:.95rem"><span class="dot dot--ember"></span> Pastor Ade</span>
+  </div>
+  <div class="room__strip">
+    <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 30% 20%,#2a2033,#0c1a29)"></div><span class="tile__name">Maria</span></div>
+    <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 60% 30%,#20364e,#0c1a29)"></div><span class="tile__name">Josiah</span></div>
+    <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 40% 40%,#1c3340,#0c1a29)"></div><span class="tile__name">Grace</span></div>
+    <div class="tile"><div class="tile__fill" style="background:radial-gradient(120% 120% at 70% 20%,#2b2a44,#0c1a29)"></div><span class="tile__name">Daniel</span></div>
+  </div>
+</div>
+
+<!-- ===== leave dialog ===== -->
+<div class="scrim">
+  <div class="dialog dialog--sheet" role="dialog" aria-modal="true" aria-labelledby="leave-title">
+    <a class="dialog__close" href="room-host.html" aria-label="Close and stay in the room">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </a>
+    <div class="dialog__head">
+      <h2 class="dialog__title" id="leave-title">Leave Vespers?</h2>
+    </div>
+    <div class="dialog__body">
+      <p>You can rejoin with the same link while the room is open.</p>
+    </div>
+    <div class="dialog__foot">
+      <a class="btn btn--quiet" href="room-host.html">Stay</a>
+      <a class="btn btn--danger" href="landing.html">Leave room</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

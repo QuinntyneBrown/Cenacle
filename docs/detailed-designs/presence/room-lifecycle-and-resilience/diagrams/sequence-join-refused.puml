@@ -1,0 +1,54 @@
+@startuml
+title UML sequence behaviour — Join refused: room full or room not found
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Joining person" as joiner
+box "Frontend — Prayer client" #E0F2FE
+  participant "RoomLifecycleController" as lifecycle
+  participant "RoomFullState" as fullState
+  participant "RoomNotFoundState" as notFound
+  participant "RoomTransport" as transport
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+box "Backend — Room registry" #FFF4E5
+  database "Room registry" as registry
+end box
+
+joiner -> lifecycle : Submit a room code or open a link
+lifecycle -> transport : Resolve and join the room
+transport -> origin : Join request with the room code
+origin -> registry : Look up the code
+alt No open room for the code
+  registry --> origin : Not found
+  origin --> transport : Room not open (L2-032)
+  transport --> lifecycle : Not found
+  lifecycle -> notFound : Show room-not-found; name the code (L2-032)
+  notFound --> joiner : That room isn't open — Try another code / Host your own room
+else Open but at capacity
+  registry --> origin : Open; at capacity
+  origin -> origin : Enforce capacity server-side (L2-031)
+  origin --> transport : Room full (L2-031)
+  transport --> lifecycle : Full
+  lifecycle -> fullState : Show room-full state (L2-031)
+  fullState --> joiner : This room is full — Try again / Host a room
+else Open with space
+  registry --> origin : Open; has space
+  origin --> transport : Admitted
+  transport --> lifecycle : Joined
+  lifecycle --> joiner : Proceed toward the room
+end
+@enduml

@@ -1,0 +1,87 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Reliability, observability, and operations
+
+enum FailureKind {
+  Permission
+  Device
+  Transport
+  Capability
+  Model
+  Unexpected
+}
+
+enum DefinedState {
+  Reconnecting
+  RoomFull
+  RoomNotFound
+  UnsupportedBrowser
+  AiUnavailable
+  StillBackdrop
+  DeviceError
+  ConnectionError
+  RecoverableError
+}
+
+enum OriginHealth {
+  Reachable
+  Unreachable
+}
+
+class ClientFailure {
+  +kind: FailureKind
+  +code: string
+}
+
+class DefinedStateRouter {
+  +route(failure: ClientFailure): DefinedState
+}
+
+class ErrorBoundary {
+  +onError(error: Error): void
+  +render(): View
+}
+
+class TelemetryClient {
+  +record(event: OperationalEvent): void
+  +flush(): void
+}
+
+class OperationalEvent {
+  +name: string
+  +value: number
+  +at: Timestamp
+}
+
+class OriginMonitor {
+  +interval: Duration
+  +probe(): OriginHealth
+}
+
+note right of OperationalEvent
+  Names come from a fixed operational
+  vocabulary. Carries no prayer content,
+  journal text, reflections, caption text,
+  Scripture themes, or identifiers (L2-087).
+end note
+
+ClientFailure --> FailureKind : has
+DefinedStateRouter ..> ClientFailure : reads
+DefinedStateRouter --> DefinedState : selects
+ErrorBoundary --> DefinedState : renders RecoverableError
+DefinedStateRouter ..> TelemetryClient : records signal via
+ErrorBoundary ..> TelemetryClient : records signal via
+TelemetryClient --> OperationalEvent : emits
+OriginMonitor --> OriginHealth : reports
+@enduml

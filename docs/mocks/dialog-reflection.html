@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — A reflection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* Page-local layout only — the simplified journal backdrop behind the scrim */
+  .backdrop{position:fixed;inset:0;z-index:0;padding:var(--sp-6);display:flex;flex-direction:column;gap:var(--sp-4);overflow:hidden}
+  .backdrop__bar{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);opacity:.7}
+  .backdrop__paper{flex:1;min-height:0}
+  .backdrop .paper-panel{height:100%;display:flex;flex-direction:column;gap:var(--sp-4)}
+  .ghost-line{height:.85rem;border-radius:var(--r-pill);background:var(--border);opacity:.5}
+  .quoted{color:var(--muted);border-left:2px solid var(--border-strong);padding-left:var(--sp-4)}
+</style>
+</head>
+<body class="night">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ===== Simplified journal backdrop (behind the scrim) ===== -->
+<div class="backdrop" aria-hidden="true">
+  <div class="backdrop__bar">
+    <a class="brand" href="index.html" style="font-size:1.05rem"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg> Cenacle <small>upper room</small></a>
+    <span class="pill pill--sage"><span class="dot dot--sage"></span> on-device journal</span>
+  </div>
+  <div class="backdrop__paper">
+    <div class="paper-panel">
+      <p class="reflection" style="opacity:.55">Thursday, late — after the call ended and the house went quiet.</p>
+      <div class="stack gap-3" style="opacity:.35">
+        <span class="ghost-line" style="width:92%"></span>
+        <span class="ghost-line" style="width:78%"></span>
+        <span class="ghost-line" style="width:85%"></span>
+        <span class="ghost-line" style="width:60%"></span>
+        <span class="ghost-line" style="width:88%"></span>
+        <span class="ghost-line" style="width:44%"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Reflection dialog ===== -->
+<div class="scrim">
+  <div class="dialog dialog--wide" role="dialog" aria-modal="true" aria-labelledby="rf-title">
+    <div class="dialog__accent"></div>
+    <a class="dialog__close" href="journal.html" aria-label="Close reflection">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </a>
+
+    <div class="dialog__head">
+      <span class="eyebrow dialog__eyebrow is-plain">On-device · nothing transmitted</span>
+      <h2 class="dialog__title" id="rf-title">A reflection</h2>
+    </div>
+
+    <div class="dialog__body stack gap-5">
+      <p class="quoted small">"I keep showing up for everyone and I'm not sure anyone would notice if I stopped."</p>
+
+      <p class="reflection sacred">That's a heavy thing to carry alone, and naming it here took something. You don't have to hold the whole weight tonight. If it helps, the psalmist wrote of being seen even when unnoticed by everyone else — you might sit with Psalm 139 when you're ready, or simply rest a while.</p>
+
+      <div class="banner banner--sage">
+        <span class="seal__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <div>
+          <div class="banner__title">This stayed with you</div>
+          <p class="small muted">It was written on your device from your own words. <span class="mono">0 requests</span> left this machine.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dialog__foot">
+      <button class="btn btn--quiet" type="button">Not helpful</button>
+      <a class="btn btn--primary" href="journal.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4C12 5 8 8 5 18l1 1C16 16 19 12 20 4Z"/><path d="M6 19l5-5"/></svg>
+        Keep with entry
+      </a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

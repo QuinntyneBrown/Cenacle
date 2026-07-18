@@ -1,0 +1,17 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Audio-reactive worship visuals
+
+Person(participant, "Participant", "Sees the sanctuary and hears the gathering")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — WebGPU, Web Audio", "Analyses the live in-room audio and renders the audio-reactive sanctuary on-device")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Relays live gathering media within the room; persists no media")
+  ContainerDb(store, "On-device store", "IndexedDB / localStorage", "Holds VisualsSettings; persistence owned by the settings slice (L2-063)")
+}
+
+Rel(participant, spa, "Sees the audio-reactive sanctuary in", "HTTPS")
+Rel(origin, spa, "Relays live in-room audio to", "WebTransport / HTTP/3")
+Rel(spa, store, "Reads VisualsSettings from")
+@enduml

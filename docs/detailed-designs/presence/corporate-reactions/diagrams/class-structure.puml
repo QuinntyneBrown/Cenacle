@@ -1,0 +1,69 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Corporate reactions ("Amen")
+
+enum ReactionKind {
+  Amen
+  RaisedHand
+}
+
+class Reaction {
+  +kind: ReactionKind
+  +senderId: string
+  +sentAt: number
+}
+
+class ReactionControl {
+  +onActivate(): void
+}
+
+class ReactionSender {
+  +minIntervalMs: number
+  +lastSentAt: number
+  +send(kind: ReactionKind): void
+}
+
+class RoomTransport {
+  +sendDatagram(bytes: Uint8Array): void
+  +datagrams(): ReadableStream
+}
+
+class ReactionReceiver {
+  +start(): void
+  +onDatagram(bytes: Uint8Array): void
+}
+
+class MoteRenderer {
+  +reducedMotion: boolean
+  +surface(reaction: Reaction): void
+}
+
+class ReactionCounter {
+  +windowMs: number
+  +record(reaction: Reaction): void
+  +count(): number
+  +prune(now: number): void
+}
+
+ReactionControl --> ReactionSender : invokes
+ReactionSender ..> Reaction : builds
+ReactionSender --> RoomTransport : sends datagram via
+ReactionReceiver --> RoomTransport : reads datagrams from
+ReactionReceiver ..> Reaction : decodes
+ReactionReceiver --> MoteRenderer : forwards to
+ReactionReceiver --> ReactionCounter : records into
+Reaction --> ReactionKind : has
+MoteRenderer ..> Reaction : renders
+ReactionCounter ..> Reaction : counts
+@enduml

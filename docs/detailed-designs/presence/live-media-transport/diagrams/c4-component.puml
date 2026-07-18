@@ -1,0 +1,32 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Live media transport (Prayer client)
+
+Person(participant, "Participant", "Publishes and views live presence")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(negotiator, "CodecNegotiator", "Client service", "Selects H.264 or VP9, prefers a hardware path, falls back to a supported codec")
+  Component(encoder, "MediaEncoder", "WebCodecs wrapper", "Encodes captured VideoFrame and AudioData into chunks")
+  Component(transport, "RoomTransport", "WebTransport client", "Publishes chunks and subscribes to remote streams over HTTP/3")
+  Component(decoder, "MediaDecoder", "WebCodecs wrapper", "Decodes remote chunks into VideoFrame and AudioData")
+  Component(renderer, "FrameRenderer", "Canvas / WebGPU surface", "Renders decoded frames on a per-frame callback; shows the camera-off tile")
+  Component(latency, "LatencyMeter", "Client service", "Derives the glass-to-glass estimate and the readout")
+  Component(detector, "ActiveSpeakerDetector", "Client service", "Flags the speaking participant from audio level")
+}
+
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Relays media within one small room")
+
+Rel(participant, encoder, "Publishes captured presence through")
+Rel(participant, renderer, "Sees and hears others through")
+Rel(negotiator, encoder, "Configures the encode codec via", "CodecSelection")
+Rel(negotiator, decoder, "Configures the decode codec via", "CodecSelection")
+Rel(encoder, transport, "Hands encoded chunks to")
+Rel(transport, origin, "Publishes and subscribes over", "WebTransport / HTTP/3")
+Rel(transport, decoder, "Delivers remote chunks to")
+Rel(decoder, renderer, "Delivers decoded frames to")
+Rel(decoder, detector, "Feeds decoded audio level to")
+Rel(detector, renderer, "Flags the active-speaker tile to")
+Rel(renderer, latency, "Reports render timestamps to")
+Rel(transport, latency, "Reports arrival timing to")
+@enduml

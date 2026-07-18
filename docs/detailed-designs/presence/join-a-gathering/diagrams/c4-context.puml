@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Join a live gathering
+
+Person(joiner, "Joiner", "Enters an existing gathering by room code or invite link")
+Person(host, "Host", "Opens the gathering the joiner enters")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; resolves room access, previews, and renders presence")
+
+Rel(joiner, cenacle, "Joins by code or link, previews, and enters using", "HTTPS / WebTransport")
+Rel(host, cenacle, "Opens the gathering joined in", "HTTPS / WebTransport")
+@enduml

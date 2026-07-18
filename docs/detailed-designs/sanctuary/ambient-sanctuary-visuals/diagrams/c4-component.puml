@@ -1,0 +1,27 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Ambient sanctuary visuals (Prayer client)
+
+Person(person, "Person in the gathering", "Sees the ambient sanctuary behind the stage")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(layer, "SanctuaryLayer", "UI background layer", "Resolves which visual to show on room load and mounts the renderer or the backdrop behind the presence stage")
+  Component(renderer, "SanctuaryRenderer", "WebGPU renderer", "Draws the ambient atmosphere — light, depth, motion — on its own loop, targeting ~60fps")
+  Component(backdrop, "StillBackdrop", "UI layer", "Calm static background used when visuals are off, reduce-motion is set, or WebGPU is unavailable")
+  Component(settings, "VisualsSettings", "Client state", "Holds the ambient-visuals toggle set at host setup and in settings")
+  Component(reduce, "ReduceMotion", "Client check", "Reports the OS prefers-reduced-motion preference")
+  Component(gpu, "WebGpuProbe", "Client check", "Reports whether navigator.gpu / WebGPU is available")
+  Component(stage, "Presence stage", "UI (neighbouring)", "Renders live presence video; the ambient layer renders behind it and shall not block its frames")
+  ComponentDb(store, "On-device store", "IndexedDB / localStorage", "Persists the visuals toggle via LocalStore")
+}
+
+Rel(person, layer, "Sees the ambient sanctuary through")
+Rel(layer, settings, "Reads the visuals toggle from")
+Rel(layer, reduce, "Checks reduced-motion via")
+Rel(layer, gpu, "Checks WebGPU availability via")
+Rel(layer, renderer, "Mounts the GPU atmosphere via")
+Rel(layer, backdrop, "Falls back to")
+Rel(layer, stage, "Renders beneath")
+Rel(settings, store, "Persists the toggle in")
+@enduml

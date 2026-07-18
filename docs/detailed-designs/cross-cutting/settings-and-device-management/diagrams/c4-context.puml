@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Settings and device management
+
+Person(person, "Person", "Configures devices, presence, captions, and sanctuary preferences")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; stores settings on the device only")
+System_Ext(devices, "Media devices", "Camera, microphone, and speaker hardware the browser exposes")
+
+Rel(person, cenacle, "Configures and saves preferences in", "HTTPS")
+Rel(cenacle, devices, "Enumerates and tests through", "navigator.mediaDevices / Web Audio")
+@enduml

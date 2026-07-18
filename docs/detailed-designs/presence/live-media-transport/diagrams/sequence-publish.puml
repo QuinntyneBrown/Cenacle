@@ -1,0 +1,43 @@
+@startuml
+title UML sequence behaviour — Publish encoded media over WebTransport
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Publishing participant" as pub
+box "Frontend — Prayer client" #E0F2FE
+  participant "MediaStreamTrackProcessor" as capture
+  participant "CodecNegotiator" as negotiator
+  participant "MediaEncoder" as encoder
+  participant "RoomTransport" as transport
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+
+pub -> negotiator : Select codec for this machine
+negotiator -> negotiator : Prefer hardware H.264 / VP9, else fall back (L2-014)
+negotiator --> encoder : configure(CodecSelection)
+loop each captured frame
+  capture -> encoder : VideoFrame / AudioData
+  encoder -> encoder : Encode with WebCodecs (L2-011)
+  encoder -> transport : EncodedChunk
+  alt WebTransport session healthy
+    transport -> origin : Publish encoded chunk over HTTP/3 (L2-011)
+    origin --> transport : Relayed to room subscribers
+  else Connection dropped
+    transport -> transport : Detect drop, stop sending media (L2-011)
+    transport --> pub : Hand off to reconnect flow (L2-030)
+  end
+end
+@enduml

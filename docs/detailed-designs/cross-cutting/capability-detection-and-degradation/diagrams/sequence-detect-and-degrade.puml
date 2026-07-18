@@ -1,0 +1,64 @@
+@startuml
+title UML sequence behaviour — Detect and degrade at app init
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Visitor" as visitor
+box "Frontend — Prayer client" #E0F2FE
+  participant "AppShell" as app
+  participant "CapabilityDetector" as detector
+  participant "Browser capabilities" as browser
+  participant "DegradationPolicy" as policy
+  participant "SupportMatrixView" as matrix
+  participant "GoLiveController" as golive
+  participant "OnDeviceModel" as model
+  participant "SanctuaryRenderer" as renderer
+  participant "StillBackdrop" as still
+end box
+
+visitor -> app : Open Cenacle
+app -> detector : detect()
+detector -> browser : Probe WebTransport, WebCodecs, WebGPU, Prompt API (L2-064)
+browser --> detector : Presence, AI, and GPU support flags
+detector -> detector : Classify each available or unavailable without throwing (L2-064)
+detector --> app : CapabilityReport
+app -> matrix : Render support matrix and summary count (L2-064)
+matrix --> visitor : Per-capability ready or not-available
+app -> policy : evaluate(report)
+policy --> app : DegradationPlan (presence, word, sanctuary)
+
+alt WebTransport or WebCodecs absent (L2-065)
+  app -> golive : Present unsupported-browser state
+  golive --> visitor : Explain what is missing, name supported browsers, offer to copy the room link; do not offer to enter (L2-065)
+else Presence capabilities present
+  app -> golive : Enable presence entry
+  golive --> visitor : Live gathering available
+end
+
+alt Prompt API absent (L2-066)
+  app -> model : Hide reflection, Scripture surfacing, and captions; issue zero cloud requests (L2-066)
+  model --> visitor : Explain "degrade, do not reroute"; presence still works
+else Prompt API present
+  app -> model : Enable Word features
+  model --> visitor : Reflection, Scripture, and captions available
+end
+
+alt WebGPU absent (L2-067)
+  app -> still : Substitute still backdrop automatically; make zero requests (L2-067)
+  still --> visitor : Calm static backdrop
+else WebGPU present
+  app -> renderer : Render the WebGPU ambient backdrop
+  renderer --> visitor : Living sanctuary visuals
+end
+@enduml

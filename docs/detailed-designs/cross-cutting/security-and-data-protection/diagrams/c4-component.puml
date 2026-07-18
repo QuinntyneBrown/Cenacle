@@ -1,0 +1,30 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Security and data protection
+
+Person(person, "Person joining a gathering", "Enters user text and presents a room credential")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(ui, "Prayer UI", "UI views", "Displays room and display names, themes, journal text, and captions")
+  Component(sanitizer, "InputSanitizer", "Client module", "Validates length limits and encodes user text so it renders as inert text")
+  Component(csp, "CspPolicy", "Delivered security policy", "Restricts connect-src, script-src, and framing to an explicit allowlist (L2-070)")
+  Component(transport, "RoomTransport", "WebTransport client", "Opens the HTTP/3 (TLS) session and presents the room credential")
+  ComponentDb(localStore, "LocalStore", "Origin-scoped storage wrapper", "Confines and clears private on-device data")
+}
+
+Container_Boundary(origin, "Room origin") {
+  Component(limiter, "RateLimiter", "Server-side guard", "Throttles repeated invalid join attempts")
+  Component(credential, "RoomCredential", "Server-side authorizer", "Validates the room code/token before admitting to media")
+  ComponentDb(registry, "Room registry", "Ephemeral in-memory store", "Open rooms and high-entropy codes (L2-027)")
+}
+
+Rel(person, ui, "Enters and views user text in")
+Rel(ui, sanitizer, "Validates and encodes text through")
+Rel(ui, localStore, "Persists and clears private data via")
+Rel(ui, transport, "Joins a gathering through")
+Rel(csp, transport, "Limits connect-src origins for")
+Rel(transport, limiter, "Join attempts arrive at", "WebTransport / HTTP/3 (TLS)")
+Rel(limiter, credential, "Forwards attempts within the limit to")
+Rel(credential, registry, "Validates the room credential against")
+@enduml

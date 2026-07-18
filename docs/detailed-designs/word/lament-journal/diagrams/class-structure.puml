@@ -1,0 +1,75 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Private lament journal
+
+enum ReflectionFeedback {
+  KeepWithEntry
+  NotHelpful
+}
+
+class JournalView {
+  +hasEntries: boolean
+  +showEmptyState(): void
+  +openEditor(): void
+  +listEarlier(): JournalEntry[]
+  +recordFeedback(choice: ReflectionFeedback): void
+}
+
+class JournalEditor {
+  +draftText: string
+  +wordCount: number
+  +onDeviceSealVisible: boolean
+  +countWords(): number
+  +clear(): void
+}
+
+class ReflectionService {
+  +isAvailable(): boolean
+  +requestReflection(entryText: string): Reflection
+}
+
+class OnDeviceModel {
+  +isAvailable(): boolean
+  +prompt(input: string): string
+}
+
+class LocalStore {
+  +saveEntry(entry: JournalEntry): void
+  +listEntries(): JournalEntry[]
+  +keepReflection(entryId: string, reflection: Reflection): void
+}
+
+class JournalEntry {
+  +id: string
+  +text: string
+  +createdAt: Date
+  +keptReflection: Reflection
+}
+
+class Reflection {
+  +text: string
+  +illustrativeReference: string
+  +affirmation: string
+  +isDirective: boolean
+}
+
+JournalView --> JournalEditor : hosts
+JournalView ..> ReflectionService : requests reflections through
+JournalView --> LocalStore : saves and lists via
+JournalView ..> ReflectionFeedback : records
+ReflectionService --> OnDeviceModel : uses
+ReflectionService ..> Reflection : produces
+LocalStore --> JournalEntry : stores
+JournalEntry o-- "0..1" Reflection : may keep
+@enduml

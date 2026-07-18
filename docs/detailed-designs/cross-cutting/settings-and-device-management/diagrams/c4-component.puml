@@ -1,0 +1,31 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Settings and device management (Prayer client)
+
+Person(person, "Person", "Configures preferences and tests the microphone")
+System_Ext(devices, "Media devices", "Camera, microphone, and speaker hardware")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(settingsView, "SettingsView", "UI view", "Hosts the sections and the explicit Save and Cancel controls; loads on open, saves on Save")
+  Component(deviceSettings, "DeviceSettings", "UI component", "Camera, microphone, and speaker selects")
+  Component(micTest, "MicTest", "UI component", "Live input-level meter and dB readout with flat-input guidance")
+  Component(presenceSettings, "PresenceSettings", "UI component", "H.264 / VP9 segmented control and the < 400 ms latency target")
+  Component(captionsSettings, "CaptionsWordSettings", "UI component", "Captions toggle, language, and on-device model status")
+  Component(sanctuarySettings, "SanctuarySettings", "UI component", "Ambient-visuals and audio-reactive toggles; reduce-motion note")
+  Component(deviceSvc, "MediaDeviceService", "Client service", "Enumerates and acquires devices via navigator.mediaDevices")
+}
+
+ComponentDb(store, "LocalStore", "IndexedDB / localStorage", "Persists settings on the device only")
+
+Rel(person, settingsView, "Configures preferences in")
+Rel(settingsView, deviceSettings, "Hosts")
+Rel(settingsView, presenceSettings, "Hosts")
+Rel(settingsView, captionsSettings, "Hosts")
+Rel(settingsView, sanctuarySettings, "Hosts")
+Rel(deviceSettings, micTest, "Hosts")
+Rel(deviceSettings, deviceSvc, "Enumerates devices via")
+Rel(micTest, deviceSvc, "Acquires the microphone stream from")
+Rel(deviceSvc, devices, "Reads and tests", "navigator.mediaDevices / Web Audio")
+Rel(settingsView, store, "Loads on open and saves on Save; discards the draft on Cancel")
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Responsive and accessible experience (Prayer client)
+
+Person(person, "Person", "Operates by keyboard, pointer, or screen reader")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(shell, "AppShell", "UI root", "Applies the responsive layout and the active visual register to every screen")
+  Component(layout, "ResponsiveLayout", "Layout service", "Applies XS–XL breakpoints; reflows content; prevents horizontal overflow of the page body")
+  Component(theme, "RegisterTheme", "Theme service", "Selects the manuscript or upper-room register; scopes the serif face to Scripture and reflections; carries AA-contrast tokens")
+  Component(motion, "ReduceMotion", "Preference service", "Reads the OS reduce-motion preference and gates animated effects")
+  Component(dialog, "AccessibleDialog", "UI component", "Presents modal overlays with a dialog/alertdialog role and a labelled title")
+  Component(focus, "FocusManager", "Accessibility service", "Moves focus into an overlay, traps it, and restores it to the opener")
+  Component(announcer, "LiveRegionAnnouncer", "Accessibility service", "Owns ARIA live regions; announces captions, reconnect status, and reaction counts")
+  Component(surfaces, "Dynamic surfaces", "Caption overlay, reconnect overlay, reaction counter", "Neighbouring slices whose updates are announced (L2-046, L2-021)")
+}
+
+System_Ext(at, "Assistive technology", "Screen reader")
+System_Ext(platform, "Operating system / browser", "Viewport and reduce-motion settings")
+
+Rel(person, shell, "Operates each screen in")
+Rel(shell, layout, "Lays out each screen with")
+Rel(shell, theme, "Applies the active register from")
+Rel(shell, dialog, "Presents overlays through")
+Rel(layout, platform, "Reads viewport breakpoints from", "matchMedia")
+Rel(motion, platform, "Reads reduce-motion preference from", "matchMedia")
+Rel(theme, motion, "Gates animated register effects through")
+Rel(dialog, focus, "Traps and restores focus through")
+Rel(dialog, at, "Exposes role and labelled title to", "ARIA")
+Rel(surfaces, announcer, "Publish caption, reconnect, and reaction updates through")
+Rel(announcer, at, "Announces updates to", "ARIA live region")
+@enduml

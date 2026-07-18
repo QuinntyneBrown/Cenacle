@@ -1,0 +1,48 @@
+@startuml
+title UML sequence behaviour — Test the microphone
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "SettingsView" as view
+  participant "DeviceSettings" as devsettings
+  participant "MicTest" as mictest
+  participant "MediaDeviceService" as devices
+end box
+box "Device — Media and audio" #FFF4E5
+  participant "Microphone (Web Audio)" as audio
+end box
+
+person -> view : Open Settings, go to Devices
+view -> devsettings : Show camera, microphone, speaker selects (L2-059)
+devsettings -> devices : enumerate()
+devices --> devsettings : DeviceInfo[]
+devsettings --> person : Populated device selects
+
+person -> mictest : Start mic test and speak (L2-059)
+mictest -> devices : acquire(microphoneId)
+devices --> mictest : Local MediaStream
+mictest -> audio : Analyse input level (Web Audio)
+loop While the test runs
+  audio --> mictest : Sampled input level
+  alt Input present
+    mictest --> person : Input meter and dB readout move (L2-059)
+  else Flat input
+    mictest --> person : Suggest another microphone (L2-059)
+  end
+end
+person -> mictest : Stop test
+mictest -> devices : Release the stream
+@enduml

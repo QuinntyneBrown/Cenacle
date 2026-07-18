@@ -1,0 +1,18 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Capability detection and graceful degradation
+
+Person(visitor, "Visitor", "Opens Cenacle in a browser")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA", "Detects capabilities at init and gates every feature on the result")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Presence transport; reached only when WebTransport and WebCodecs are present")
+}
+
+System_Ext(browser, "Web browser platform", "Exposes WebTransport, WebCodecs, WebGPU, and the on-device Prompt API — any of which may be absent")
+
+Rel(visitor, spa, "Uses", "HTTPS")
+Rel(spa, browser, "Feature-detects WebTransport, WebCodecs, WebGPU, and the Prompt API at init")
+Rel(spa, origin, "Publishes and subscribes only when the presence capabilities are present", "WebTransport / HTTP/3")
+@enduml

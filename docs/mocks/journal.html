@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Lament journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* Page-local layout only */
+  .jbar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.2) blur(12px);border-bottom:1px solid var(--hairline)}
+  .jbar .inner{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);height:66px}
+  .jbar__seal{flex:1;display:flex;justify-content:center}
+  @media(max-width:640px){.jbar__seal{display:none}}
+  .journal-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);flex-wrap:wrap;margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--border)}
+  .earlier-row{display:flex;align-items:baseline;gap:var(--sp-4);padding:var(--sp-3) 0;border-bottom:1px solid var(--hairline)}
+  .earlier-row:last-child{border-bottom:0}
+  .earlier-row .date{flex:none;width:5.5rem}
+  .earlier-row .line{flex:1;min-width:0;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .earlier-row:hover .line{color:var(--text-soft)}
+</style>
+</head>
+<body class="night">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<!-- ===== MINIMAL TOP BAR ===== -->
+<header class="jbar">
+  <div class="container inner">
+    <a class="brand" href="index.html"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg> Cenacle</a>
+    <div class="jbar__seal">
+      <span class="seal">
+        <span class="seal__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <span><b>Private</b> · on-device · <span class="mono">nothing transmitted</span></span>
+      </span>
+    </div>
+    <a class="btn btn--quiet" href="index.html" aria-label="Close journal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </a>
+  </div>
+</header>
+
+<main class="container container-narrow section">
+
+  <p class="eyebrow">Subsystem B · Word</p>
+
+  <h1 class="h2 mt-4">Lament journal</h1>
+  <p class="lede mt-3">A place to say the thing you can't say out loud yet. No one reads this — not us, not a server, not anyone. It never leaves this device.</p>
+
+  <!-- ===== EDITOR ===== -->
+  <div class="paper-panel mt-6">
+    <label class="label" for="lament" style="display:block;margin-bottom:var(--sp-3)">Today · <span class="mono" style="font-weight:400;color:var(--muted)">18 Jul 2026</span></label>
+    <textarea id="lament" class="journal-editor" placeholder="Say it plainly. This stays on your device.">I don't know how to pray about this anymore. I've asked for the same thing so many times that the words have gone flat in my mouth.
+
+Mum's scan is Tuesday and I told everyone at group I was at peace with whatever comes. That was a lie. I am not at peace. I am furious and I am scared and I don't understand why it has to be her.
+
+I keep waiting to feel the thing people talk about — the calm, the assurance. It doesn't come. Most nights it's just me and the ceiling and a silence that doesn't answer back.
+
+I still show up. I don't know if that counts for anything. But I'm here, and I'm still talking to you, even if it's only to tell you I'm angry.</textarea>
+
+    <div class="journal-foot">
+      <div class="cluster gap-3">
+        <span class="mono muted">142 words</span>
+        <span class="pill pill--sage"><span class="dot dot--sage"></span> on-device</span>
+      </div>
+      <div class="cluster gap-3">
+        <button class="btn btn--quiet" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          Clear
+        </button>
+        <a class="btn btn--primary" href="dialog-reflection.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z"/></svg>
+          Ask for a reflection
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint mt-3" style="text-align:center">Reflections are gentle and never final — the last word is always yours.</p>
+
+  <!-- ===== EARLIER ===== -->
+  <section class="mt-8">
+    <div class="between mb-4">
+      <h2 class="h3">Earlier</h2>
+      <span class="tag">only on this device</span>
+    </div>
+    <div class="card card--flush" style="padding-inline:var(--sp-5)">
+      <a class="earlier-row" href="#">
+        <span class="date mono muted small">11 Jul</span>
+        <span class="line">Made it through the week. Didn't cry at work once, which I'm counting as a win.</span>
+      </a>
+      <a class="earlier-row" href="#">
+        <span class="date mono muted small">04 Jul</span>
+        <span class="line">Everyone keeps saying it'll be fine and I want to scream that they don't know that.</span>
+      </a>
+      <a class="earlier-row" href="#">
+        <span class="date mono muted small">28 Jun</span>
+        <span class="line">First time I've written anything down. Not sure what I'm doing here, but here I am.</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>

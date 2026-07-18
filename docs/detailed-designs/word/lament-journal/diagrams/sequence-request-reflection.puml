@@ -1,0 +1,59 @@
+@startuml
+title UML sequence behaviour — Ask for a reflection
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person at prayer" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "JournalView" as view
+  participant "JournalEditor" as editor
+  participant "ReflectionService" as svc
+end box
+box "On-device — browser platform" #FFF4E5
+  participant "OnDeviceModel (Prompt API)" as model
+  database "LocalStore (IndexedDB)" as store
+end box
+
+person -> view : Open the journal
+view -> svc : isAvailable()
+svc -> model : Feature-detect the Prompt API (L2-049)
+model --> svc : Availability
+svc --> view : Model available or not
+
+alt On-device model available
+  view --> person : Show editor and the "Ask for a reflection" action
+  person -> editor : Write an entry
+  editor -> editor : Update live word count and show on-device seal (L2-038)
+  person -> view : Request a reflection
+  view -> view : Show in-progress state; no request made (L2-040)
+  view -> svc : requestReflection(entryText)
+  svc -> model : prompt(entryText) — generate on the device (L2-040)
+  note over model : On-device inference; zero outbound requests (L2-070)
+  model --> svc : Draft reflection text
+  svc -> svc : Frame as gentle, illustrative, non-directive (L2-041)
+  svc --> view : Reflection with an on-device / zero-requests affirmation (L2-040)
+  view --> person : Gentle reflection; the last word stays the person's (L2-041)
+  opt Keep with entry
+    person -> view : Keep with entry (L2-042)
+    view -> store : keepReflection(entryId, reflection) — on device only (L2-042)
+    store --> view : Stored on this device
+  end
+  opt Not helpful
+    person -> view : Not helpful (L2-042)
+    view -> view : Discard without storing; no request sent (L2-042)
+  end
+else On-device model unavailable
+  view --> person : Hide the reflection action; writing and saving still work; nothing rerouted (L2-040, L2-066)
+end
+@enduml

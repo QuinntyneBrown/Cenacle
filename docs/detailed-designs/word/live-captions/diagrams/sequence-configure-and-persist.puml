@@ -1,0 +1,37 @@
+@startuml
+title UML sequence behaviour — Choose language and persist captions default
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Participant" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "CaptionSettings" as settings
+  participant "CaptionController" as controller
+end box
+box "On-device — storage" #FFF4E5
+  database "LocalStore" as store
+end box
+
+== Choose the caption language ==
+person -> settings : Select the caption language from the supported set (L2-047)
+settings -> store : Persist the selected language (L2-047)
+store --> settings : Saved on the device
+settings -> controller : Apply the new language to transcription (L2-047)
+
+== Toggle captions in the room ==
+person -> controller : Toggle captions in the room, control per L2-018
+controller -> store : Persist the captions default (L2-048)
+store --> controller : Saved on the device
+note over store : The stored default seeds the green room and the in-room toggle next session (L2-048)
+@enduml

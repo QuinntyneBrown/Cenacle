@@ -1,0 +1,52 @@
+@startuml
+title UML sequence behaviour — Authenticated join
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person joining a gathering" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "RoomTransport" as transport
+end box
+box "Backend — Room origin" #D1FADF
+  participant "RateLimiter" as limiter
+  participant "RoomCredential" as credential
+end box
+box "Backend — Room registry" #FFF4E5
+  database "Room registry" as registry
+end box
+
+person -> transport : Join with room credential
+transport -> limiter : Open HTTP/3 (TLS) session, present credential (L2-072)
+alt Repeated invalid attempts over threshold
+  limiter --> transport : Refuse, HTTP 429 (L2-075)
+  transport --> person : Show "too many attempts", back off
+else Within the rate limit
+  limiter -> credential : Forward attempt within the limit
+  credential -> registry : Look up open room for the code (L2-075)
+  alt Invalid or expired credential
+    registry --> credential : No open room / expired
+    credential -> limiter : Record failed attempt (L2-075)
+    credential --> transport : Refuse admission to media (L2-072)
+    transport --> person : Show "room not open" (L2-032)
+  else Room at capacity
+    registry --> credential : Open room, at capacity
+    credential --> transport : Refuse — capacity enforced server-side (L2-075)
+    transport --> person : Show "room is full" (L2-031)
+  else Valid credential, room open with capacity
+    registry --> credential : Open room, capacity available (codes carry entropy per L2-027)
+    credential --> transport : Admit to room media (L2-072)
+    transport --> person : Enter the live room
+  end
+end
+@enduml

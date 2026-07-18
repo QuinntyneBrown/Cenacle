@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Capability detection and graceful degradation
+
+Person(visitor, "Visitor", "Opens Cenacle in whatever browser they have")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; feature-detects every advanced capability and degrades where one is missing")
+System_Ext(browser, "Web browser platform", "Provides or lacks WebTransport, WebCodecs, WebGPU, and the on-device Prompt API")
+
+Rel(visitor, cenacle, "Opens and uses", "HTTPS")
+Rel(cenacle, browser, "Feature-detects capabilities of, without sending private content")
+@enduml

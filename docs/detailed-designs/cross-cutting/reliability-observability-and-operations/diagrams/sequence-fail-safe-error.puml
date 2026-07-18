@@ -1,0 +1,42 @@
+@startuml
+title UML sequence behaviour — Fail-safe error handling
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Person in a gathering" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "Feature view" as view
+  participant "DefinedStateRouter" as router
+  participant "ErrorBoundary" as boundary
+  participant "TelemetryClient" as telemetry
+end box
+box "Backend — Operations (monitoring)" #FFF4E5
+  participant "Monitoring & alerting" as mon
+end box
+
+person -> view : Perform an action (host / join / Word / visuals)
+alt Known failure (permission / device / transport / capability / model)
+  view -> router : Route ClientFailure by kind (L2-086)
+  router -> router : Map failure kind to defined state (L2-030/031/032/065/066/067/068)
+  router --> view : Defined state — names the cause and one next step
+  view -> telemetry : Record failure-kind signal — no content, no PII (L2-087)
+  view --> person : Show the matching defined state
+else Unexpected error thrown
+  view -> boundary : Propagate unexpected error
+  boundary -> boundary : Contain error; build recoverable message (L2-086)
+  boundary -> telemetry : Record contained-error signal — no content, no PII (L2-087)
+  boundary --> person : Recoverable message (what happened + one next step), not blank or frozen
+end
+telemetry -> mon : Emit non-identifying operational signals (L2-087)
+@enduml

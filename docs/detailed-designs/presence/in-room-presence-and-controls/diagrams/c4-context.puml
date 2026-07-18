@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — In-room presence and controls
+
+Person(host, "Host", "Opened the gathering; runs in-room controls, marked host in the roster")
+Person(participant, "Participant", "Joined the gathering; runs the same in-room controls")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; presents the live room, its roster, and its controls")
+
+Rel(host, cenacle, "Controls mic, camera, captions, and companion in", "HTTPS / WebTransport")
+Rel(participant, cenacle, "Controls mic, camera, captions, and companion in", "HTTPS / WebTransport")
+@enduml

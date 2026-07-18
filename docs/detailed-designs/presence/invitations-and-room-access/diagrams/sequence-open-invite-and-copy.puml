@@ -1,0 +1,45 @@
+@startuml
+title UML sequence behaviour — Open Invite and copy the link
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Host" as host
+box "Frontend — Prayer client" #E0F2FE
+  participant "InviteDialog" as dialog
+  participant "Room" as room
+  participant "InviteArtifacts" as artifacts
+  participant "QrEncoder" as qr
+  participant "Clipboard" as clip
+end box
+
+host -> dialog : Open Invite
+dialog -> room : Read the allocated room code
+room --> dialog : Six-character code (allocated at room open)
+dialog -> artifacts : build(room)
+artifacts -> room : inviteLink()
+room --> artifacts : Invite link .../r/{CODE} with the embedded code (L2-025)
+artifacts -> qr : encode(invite link)
+qr --> artifacts : QR of the invite link (L2-025)
+artifacts --> dialog : Link, code, and QR; code in link matches displayed code (L2-025)
+dialog --> host : Show link, code, and QR; state rooms stay small on purpose (L2-025)
+host -> dialog : Activate "Copy link"
+dialog -> clip : writeText(invite link)
+alt Clipboard API available and permitted
+  clip --> dialog : Write succeeded
+  dialog --> host : Show "Link copied" confirmation (L2-026)
+else Clipboard API unavailable or denied
+  clip --> dialog : Unavailable or denied; no unhandled error (L2-026)
+  dialog --> host : Offer selectable-text fallback to copy manually (L2-026)
+end
+@enduml

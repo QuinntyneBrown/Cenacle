@@ -1,0 +1,97 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Room lifecycle and resilience
+
+enum RoomRole {
+  Host
+  Participant
+}
+
+enum ConnectionState {
+  Live
+  Dropped
+  Reconnecting
+  Closed
+}
+
+class RoomLifecycleController {
+  +session: RoomSession
+  +leave(): void
+  +confirmLeave(): void
+  +endGathering(): void
+  +confirmEnd(): void
+  +onConnectionDropped(): void
+  +retry(attempt: number): void
+  +onReconnected(): void
+  +showRoomFull(): void
+  +showRoomNotFound(code: string): void
+}
+
+class RoomSession {
+  +code: string
+  +role: RoomRole
+  +muted: boolean
+  +cameraOn: boolean
+  +state: ConnectionState
+}
+
+class LeaveDialog {
+  +confirm(): void
+  +cancel(): void
+}
+
+class EndDialog {
+  +destructive: boolean
+  +confirm(): void
+  +cancel(): void
+}
+
+class ReconnectOverlay {
+  +attempt: number
+  +lastLatencyMs: number
+  +show(): void
+  +update(attempt: number, lastLatencyMs: number): void
+  +offerLeave(): void
+  +dismiss(): void
+}
+
+class RoomFullState {
+  +tryAgain(): void
+  +hostARoom(): void
+}
+
+class RoomNotFoundState {
+  +code: string
+  +tryAnotherCode(): void
+  +hostARoom(): void
+}
+
+class RoomTransport {
+  +lastLatencyMs: number
+  +pauseOutbound(): void
+  +resumeOutbound(): void
+  +reconnect(attempt: number): boolean
+  +close(): void
+}
+
+RoomLifecycleController --> RoomSession : holds
+RoomLifecycleController --> LeaveDialog : shows
+RoomLifecycleController --> EndDialog : shows
+RoomLifecycleController --> ReconnectOverlay : shows
+RoomLifecycleController --> RoomFullState : shows
+RoomLifecycleController --> RoomNotFoundState : shows
+RoomLifecycleController --> RoomTransport : uses
+RoomSession --> RoomRole : has
+RoomSession --> ConnectionState : has
+@enduml

@@ -1,0 +1,79 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Live media transport
+
+enum CodecPreference {
+  H264
+  VP9
+}
+
+class CodecSelection {
+  +codec: CodecPreference
+  +hardwareAccelerated: boolean
+}
+
+class CodecNegotiator {
+  +preferred: CodecPreference
+  +negotiate(): CodecSelection
+  +supportsHardware(codec: CodecPreference): boolean
+}
+
+class MediaEncoder {
+  +configure(selection: CodecSelection): void
+  +encode(frame: VideoFrame): EncodedChunk
+}
+
+class MediaDecoder {
+  +configure(selection: CodecSelection): void
+  +decode(chunk: EncodedChunk): VideoFrame
+}
+
+class RoomTransport {
+  +open(url: string): void
+  +publish(chunk: EncodedChunk): void
+  +subscribe(): ReadableStream
+  +onDrop(handler: () -> void): void
+  +close(): void
+}
+
+class FrameRenderer {
+  +surface: GPUCanvasContext
+  +render(frame: VideoFrame): void
+  +showCameraOff(): void
+  +onFrame(callback: () -> void): void
+}
+
+class LatencyMeter {
+  +latencyMs: number
+  +sample(captureTs: number, renderTs: number): void
+  +read(): string
+}
+
+class ActiveSpeakerDetector {
+  +threshold: number
+  +update(level: number): void
+  +isSpeaking(): boolean
+}
+
+CodecNegotiator --> CodecSelection : produces
+CodecNegotiator ..> CodecPreference : selects
+MediaEncoder ..> CodecSelection : configured by
+MediaDecoder ..> CodecSelection : configured by
+MediaEncoder --> RoomTransport : hands chunks to
+RoomTransport --> MediaDecoder : delivers chunks to
+MediaDecoder --> FrameRenderer : delivers frames to
+MediaDecoder --> ActiveSpeakerDetector : feeds audio level to
+ActiveSpeakerDetector --> FrameRenderer : flags speaking tile in
+FrameRenderer --> LatencyMeter : reports render timestamps to
+@enduml

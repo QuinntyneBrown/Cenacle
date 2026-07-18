@@ -1,0 +1,80 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Live captions
+
+enum CaptionSegmentStatus {
+  InProgress
+  Finalized
+}
+
+class CaptionSegment {
+  +speakerId: string
+  +speakerName: string
+  +text: string
+  +status: CaptionSegmentStatus
+}
+
+class CaptionController {
+  +enabled: boolean
+  +language: string
+  +start(): void
+  +onAudioFrame(frame: AudioData): void
+  +onSegment(segment: CaptionSegment): void
+  +setEnabled(on: boolean): void
+  +stop(): void
+}
+
+class OnDeviceTranscriber {
+  +language: string
+  +configure(language: string): void
+  +push(frame: AudioData): void
+}
+
+class OnDeviceModel {
+  +isAvailable(): boolean
+  +createSession(): ModelSession
+}
+
+class CaptionOverlay {
+  +render(segment: CaptionSegment): void
+}
+
+class CaptionSettings {
+  +language: string
+  +supportedLanguages: string[]
+  +selectLanguage(code: string): void
+}
+
+class LiveRegionAnnouncer {
+  +announce(text: string): void
+}
+
+class LocalStore {
+  +getCaptionsDefault(): boolean
+  +setCaptionsDefault(on: boolean): void
+  +getCaptionLanguage(): string
+  +setCaptionLanguage(code: string): void
+}
+
+CaptionController --> OnDeviceTranscriber : uses
+CaptionController --> CaptionOverlay : updates
+CaptionController --> LiveRegionAnnouncer : announces through
+CaptionController --> CaptionSettings : reads language from
+CaptionController --> LocalStore : reads / writes default
+OnDeviceTranscriber ..> OnDeviceModel : runs on
+OnDeviceTranscriber --> CaptionSegment : produces
+CaptionOverlay ..> CaptionSegment : renders
+CaptionSegment --> CaptionSegmentStatus : has
+CaptionSettings --> LocalStore : persists via
+@enduml

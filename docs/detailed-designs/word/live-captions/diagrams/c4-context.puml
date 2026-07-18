@@ -1,0 +1,10 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Live captions
+
+Person(participant, "Participant", "Reads live captions in the room and may be the attributed speaker")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; transcribes spoken prayer on the device with no audio or transcript leaving it")
+
+Rel(participant, cenacle, "Reads on-device live captions in", "HTTPS / WebTransport")
+@enduml

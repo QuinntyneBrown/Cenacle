@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title System Context — Corporate reactions ("Amen")
+
+Person(sender, "Sending participant", "Anyone present sends an amen or raised hand")
+Person(others, "Other participants", "See the reaction surfaced near-instantly")
+System(cenacle, "Cenacle", "Browser-native prayer gathering space; relays lightweight reactions within one small room")
+
+Rel(sender, cenacle, "Sends a reaction datagram to", "WebTransport / HTTP/3")
+Rel(cenacle, others, "Surfaces the reaction to", "WebTransport / HTTP/3")
+@enduml

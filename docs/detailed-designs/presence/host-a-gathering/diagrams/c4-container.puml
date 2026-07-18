@@ -1,0 +1,17 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Containers — Host a live gathering
+
+Person(host, "Host", "Sets up and starts the gathering")
+
+System_Boundary(cenacle, "Cenacle") {
+  Container(spa, "Prayer client", "Browser SPA — WebCodecs, WebTransport", "Host setup, self-preview, and the live room")
+  Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Admits the publisher and opens the room")
+  Container(registry, "Room registry", "Ephemeral in-memory store", "Open rooms and their codes; no media persisted")
+}
+
+Rel(host, spa, "Sets up and goes live in", "HTTPS")
+Rel(spa, origin, "Publishes WebCodecs-encoded media to", "WebTransport / HTTP/3")
+Rel(origin, registry, "Allocates the room and code in")
+@enduml

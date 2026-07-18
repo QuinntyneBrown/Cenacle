@@ -1,0 +1,45 @@
+@startuml
+title UML sequence behaviour — Return the room without dropping anyone
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Participant" as person
+box "Frontend — Prayer client" #E0F2FE
+  participant "PipView" as pipView
+  participant "FloatingCompanionController" as controller
+  participant "PipWindow" as pipWindow
+  participant "RoomView" as roomView
+  participant "RoomSession" as session
+  participant "RoomTransport" as transport
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+
+end box
+
+alt Participant chooses "Return to tab"
+  person -> pipView : Activate "Return to tab" (L2-058)
+  pipView -> controller : returnToTab()
+  controller -> pipWindow : close()
+else Participant closes the floating window
+  person -> pipWindow : Close the window
+  pipWindow -> controller : onWindowClosed() (L2-058)
+end
+controller -> roomView : Move the host stage and controls back
+roomView -> session : Re-render from the live session (L2-058)
+session -> transport : Read current media and latency
+transport --> session : Live frames and latency
+note over session, origin : RoomTransport stayed connected throughout — presence, mute, and camera preserved; no participant dropped (L2-058)
+roomView --> person : Full room restored with media continuity (L2-058)
+@enduml

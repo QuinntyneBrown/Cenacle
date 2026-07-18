@@ -1,0 +1,65 @@
+@startuml
+title UML sequence behaviour — Enter the live room
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam rectangle {
+  BorderColor #344054
+  FontColor #101828
+}
+skinparam package {
+  BorderColor #667085
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+actor "Joiner" as joiner
+box "Frontend — Prayer client" #E0F2FE
+  participant "GreenRoomView" as greenroom
+  participant "PermissionPrimer" as primer
+  participant "MediaDeviceService" as devices
+  participant "EnterRoomController" as enter
+  participant "RoomTransport" as transport
+  participant "MediaDecoder" as decoder
+end box
+box "Backend — Room origin" #D1FADF
+  participant "Room origin" as origin
+end box
+
+joiner -> greenroom : Set display name and mic/camera pre-toggles (L2-008)
+joiner -> greenroom : Activate "Enter"
+greenroom -> enter : enter(ref, config)
+enter -> primer : Request camera and microphone permission (L2-009)
+primer -> joiner : Explain the uses; state nothing is recorded (L2-009)
+alt Joiner chooses "Not now"
+  joiner -> primer : Not now
+  primer --> greenroom : Return to green room, no media acquired (L2-009)
+  greenroom --> joiner : Safe prior screen, nothing acquired
+else Joiner chooses "Allow camera & mic"
+  joiner -> primer : Allow camera & mic
+  primer -> devices : Acquire selected devices via native prompt (L2-009)
+  alt Permission denied at native prompt
+    devices --> enter : Permission denied
+    enter --> greenroom : Show permission-denied recovery state (L2-068)
+    greenroom --> joiner : Re-allow steps and a camera-off path
+  else Permission granted
+    devices --> enter : Local MediaStream with pre-toggles applied (L2-008)
+    enter -> transport : Open WebTransport session and subscribe (L2-010)
+    transport -> origin : Establish HTTP/3 session, request room as participant (L2-072)
+    alt Room at capacity
+      origin --> transport : Room full
+      transport --> enter : Room full
+      enter --> greenroom : Show "room full" state (L2-031)
+      greenroom --> joiner : Rooms stay small; Try again or Host a room
+    else Admitted
+      origin --> transport : Admitted, media stream relayed
+      transport -> decoder : Hand encoded chunks to (L2-010)
+      decoder --> enter : Decoded video and audio frames (L2-010)
+      enter --> greenroom : Enter the live room as participant (L2-010)
+      greenroom --> joiner : Live room shown — host on stage, joiner as "You" (L2-010)
+    end
+  end
+end
+@enduml

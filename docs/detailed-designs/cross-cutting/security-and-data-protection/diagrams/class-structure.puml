@@ -1,0 +1,86 @@
+@startuml
+' --- shared skin header ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #344054
+skinparam class {
+  BorderColor #344054
+  FontColor #101828
+  BackgroundColor #F9FAFB
+}
+' --------------------------
+title Class structure — Security and data protection
+
+enum RateDecision {
+  Allowed
+  Throttled
+}
+
+enum AdmissionResult {
+  Admitted
+  Refused
+  Throttled
+  Full
+}
+
+class PrayerUI {
+  +render(text: string): void
+  +join(credential: RoomCredential): void
+}
+
+class InputSanitizer {
+  +maxLength: number
+  +validate(text: string, maxLength: number): string
+  +encode(text: string): string
+  +parseRoomReference(link: string): string
+}
+
+class CspPolicy {
+  +connectSrc: string[]
+  +scriptSrc: string[]
+  +frameAncestors: string[]
+  +header(): string
+}
+
+class LocalStore {
+  +put(key: string, value: unknown): void
+  +get(key: string): unknown
+  +clearAll(): void
+}
+
+class RoomTransport {
+  +open(url: string, credential: RoomCredential): void
+  +publish(chunk: EncodedChunk): void
+}
+
+class RoomCredential {
+  +code: string
+  +token: string
+  +expiresAt: number
+  +isExpired(): boolean
+}
+
+class RateLimiter {
+  +maxAttempts: number
+  +windowMs: number
+  +check(clientKey: string): RateDecision
+  +record(clientKey: string): void
+}
+
+class RoomOrigin {
+  +join(credential: RoomCredential, clientKey: string): AdmissionResult
+}
+
+PrayerUI ..> InputSanitizer : encodes user text with
+PrayerUI --> LocalStore : reads / writes / clears via
+PrayerUI --> RoomTransport : joins through
+CspPolicy ..> RoomTransport : constrains connect-src of
+RoomTransport ..> RoomCredential : presents
+RoomTransport --> RoomOrigin : connects to (TLS / HTTP/3)
+RoomOrigin ..> RoomCredential : validates
+RoomOrigin --> RateLimiter : consults
+RoomOrigin --> AdmissionResult : produces
+RateLimiter --> RateDecision : returns
+@enduml

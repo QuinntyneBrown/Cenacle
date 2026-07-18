@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cenacle — Still backdrop (WebGPU unavailable)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/cenacle.css">
+<style>
+  /* page-local layout only */
+  .page{min-height:100vh;display:flex;flex-direction:column}
+  .page__bar{flex:none;border-bottom:1px solid var(--hairline)}
+  .page__bar .inner{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);height:60px;padding-inline:var(--sp-5)}
+  .page__main{flex:1;display:grid;place-items:center}
+</style>
+</head>
+<body class="night">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
+  </linearGradient>
+</defs></svg>
+
+<div class="page">
+  <header class="page__bar">
+    <div class="inner">
+      <a class="brand" href="index.html"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg> Cenacle <small>upper room</small></a>
+      <span class="pill pill--sage"><span class="dot dot--sage"></span> Still backdrop</span>
+    </div>
+  </header>
+
+  <main class="page__main">
+    <div class="state">
+      <div class="state__inner">
+        <div class="state__mark state__mark--sage">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v2M14 3v2M10 19v2M14 19v2M3 10h2M3 14h2M19 10h2M19 14h2"/></svg>
+        </div>
+
+        <h1>Running without the living sanctuary</h1>
+        <p>Your browser can't render the ambient WebGPU visuals, so the room falls back to a calm, still backdrop. Presence, prayer, captions, and the companion all still work.</p>
+
+        <div class="banner banner--warn mb-5" style="text-align:left">
+          <span class="glyph">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          </span>
+          <div>
+            <div class="banner__title">The fallback is automatic</div>
+            <p class="small muted mt-2" style="margin:0">Nothing to fix — we switch to the still backdrop on our own. It's lighter on your device, and it makes <span class="mono">0 requests</span> to any server.</p>
+          </div>
+        </div>
+
+        <div class="cluster">
+          <a class="btn btn--primary" href="room-participant.html">Enter the room</a>
+          <a class="btn btn--quiet" href="error-unsupported-browser.html">Why?</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

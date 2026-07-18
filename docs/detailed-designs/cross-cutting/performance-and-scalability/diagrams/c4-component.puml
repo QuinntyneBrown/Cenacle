@@ -1,0 +1,35 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Performance and scalability (Prayer client and Room origin)
+
+Container_Boundary(spa, "Prayer client") {
+  Component(loadStrategy, "LoadStrategy", "Startup policy", "Paints the shell within the TTI budget and defers model download and GPU init")
+  Component(frameScheduler, "FrameScheduler", "Render scheduler", "Schedules per-frame work and sheds non-essential layers before presence video")
+  Component(latencyBudget, "LatencyBudget", "Latency policy", "Holds the 400 ms target and the low-latency-over-buffering jitter policy")
+  Component(latencyMeter, "LatencyMeter", "Shared meter", "Measures glass-to-glass latency and supplies the room readout (L2-013)")
+  Component(decoder, "MediaDecoder", "WebCodecs wrapper", "Decodes subscribed frames for the presence render (essential work)")
+  Component(transport, "RoomTransport", "WebTransport client", "Publishes and subscribes to media over HTTP/3")
+  Component(sanctuary, "SanctuaryRenderer", "WebGPU renderer", "Renders ambient sanctuary visuals (non-essential work)")
+  Component(analyser, "AudioAnalyser", "Web Audio", "Feeds audio-reactive shader parameters (non-essential work)")
+  Component(backdrop, "StillBackdrop", "Reduced layer", "Static fallback used when ambient work is shed (L2-067)")
+  Component(model, "OnDeviceModel", "Prompt API wrapper", "On-device model whose download LoadStrategy defers (L2-050)")
+}
+
+Container_Boundary(origin, "Room origin") {
+  Component(topology, "SmallRoomTopology", "Relay policy", "Enforces small-room capacity and relays within one room; no SFU fan-out")
+  ComponentDb(registry, "Room registry", "Ephemeral store", "Open rooms, codes, and per-room participant count")
+}
+
+Rel(loadStrategy, model, "Defers the one-time download of", "background")
+Rel(loadStrategy, sanctuary, "Defers GPU initialization of")
+Rel(frameScheduler, decoder, "Renders presence frames from")
+Rel(frameScheduler, sanctuary, "Reduces or disables")
+Rel(frameScheduler, analyser, "Reduces or disables")
+Rel(frameScheduler, backdrop, "Falls back to")
+Rel(latencyMeter, decoder, "Timestamps decoded frames from")
+Rel(latencyBudget, latencyMeter, "Reads samples from")
+Rel(latencyBudget, transport, "Applies the jitter policy to")
+Rel(transport, topology, "Publishes to and subscribes from", "WebTransport")
+Rel(topology, registry, "Reads capacity and count from")
+@enduml

@@ -1,0 +1,26 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Components — Audio-reactive worship visuals (Prayer client)
+
+Person(participant, "Participant", "Sees the sanctuary and hears the gathering")
+
+Container_Boundary(spa, "Prayer client") {
+  Component(audioOut, "In-room audio output", "Web Audio graph node", "Playback node carrying the live mixed gathering audio; owned by the media slice")
+  Component(analyser, "AudioAnalyser", "Web Audio (AnalyserNode)", "Taps the in-room audio and computes amplitude and frequency each frame; issues no network request")
+  Component(settings, "VisualsSettings", "On-device settings", "Holds visualsEnabled and audioReactiveEnabled; mirrors the system reduce-motion preference")
+  Component(params, "ShaderParams", "Value object", "Per-frame shader inputs; carries the audio-driven amplitude and frequency-band contributions")
+  Component(renderer, "SanctuaryRenderer", "WebGPU", "Drives the frame loop, folds ShaderParams, and renders the ambient atmosphere")
+  Component(still, "StillBackdrop", "UI layer", "Calm static background shown when ambient visuals are disabled")
+}
+
+Container(origin, "Room origin", "HTTP/3 / WebTransport server", "Relays live gathering media")
+
+Rel(participant, renderer, "Sees the sanctuary rendered by")
+Rel(origin, audioOut, "Relays live in-room audio to", "WebTransport")
+Rel(analyser, audioOut, "Taps the live audio from")
+Rel(renderer, settings, "Reads visuals and reduce-motion state from")
+Rel(renderer, analyser, "Samples amplitude and frequency each frame from")
+Rel(renderer, params, "Writes and reads per-frame shader inputs in")
+Rel(renderer, still, "Shows instead when ambient visuals are disabled")
+@enduml
