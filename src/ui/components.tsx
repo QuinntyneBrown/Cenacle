@@ -186,16 +186,14 @@ export function AppHeader({ night = false }: { night?: boolean }) {
           <LinkButton to="/" className="nav-link">
             Presence
           </LinkButton>
-          <span data-word-nav>
+          <span data-ai-word-nav>
             <LinkButton to="/word/scripture" className="nav-link">
               Word
             </LinkButton>
           </span>
-          <span data-word-nav>
-            <LinkButton to="/word/journal" className="nav-link">
-              Journal
-            </LinkButton>
-          </span>
+          <LinkButton to="/word/journal" className="nav-link">
+            Journal
+          </LinkButton>
           <LinkButton to="/settings" className="nav-link">
             Settings
           </LinkButton>
@@ -230,6 +228,9 @@ export function AppShell({
   return (
     <>
       <FlameSprite />
+      <span className="font-preload" aria-hidden="true">
+        Prayer
+      </span>
       <AppHeader night={night} />
       {children}
       <div

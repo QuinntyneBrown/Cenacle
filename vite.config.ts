@@ -7,8 +7,8 @@ export default defineConfig(({ mode }) => {
   const csp = [
     "default-src 'self'",
     "script-src 'self'",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self'",
     "img-src 'self' data: blob:",
     "media-src 'self' blob:",
     `connect-src 'self' ${roomOrigin}`,
@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'none'"
+    "frame-ancestors 'none'",
   ].join("; ");
 
   return {
@@ -25,15 +25,17 @@ export default defineConfig(({ mode }) => {
       headers: {
         "Content-Security-Policy": csp,
         "Cross-Origin-Opener-Policy": "same-origin",
-        "Permissions-Policy": "camera=(self), microphone=(self), display-capture=()",
-        "Referrer-Policy": "no-referrer"
-      }
+        "Permissions-Policy":
+          "camera=(self), microphone=(self), display-capture=()",
+        "Referrer-Policy": "no-referrer",
+      },
     },
     preview: { headers: { "Content-Security-Policy": csp } },
     test: {
       environment: "jsdom",
       setupFiles: ["./src/test/setup.ts"],
-      coverage: { reporter: ["text", "json-summary"] }
-    }
+      include: ["src/test/**/*.{test,spec}.{ts,tsx}"],
+      coverage: { reporter: ["text", "json-summary"] },
+    },
   };
 });

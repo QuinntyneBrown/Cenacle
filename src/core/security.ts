@@ -1,8 +1,12 @@
 export class InputSanitizer {
   validate(text: string, maxLength: number, minLength = 0): string {
-    const value = text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").trim();
+    const value = text
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+      .trim();
     if (value.length < minLength || value.length > maxLength) {
-      throw new RangeError(`Enter between ${minLength} and ${maxLength} characters.`);
+      throw new RangeError(
+        `Enter between ${minLength} and ${maxLength} characters.`,
+      );
     }
     return value;
   }
@@ -53,32 +57,45 @@ export class CspPolicy {
     return [
       "default-src 'self'",
       `script-src ${this.scriptSrc.join(" ")}`,
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self'",
       `connect-src ${this.connectSrc.join(" ")}`,
       `frame-ancestors ${this.frameAncestors.join(" ")}`,
       "object-src 'none'",
-      "base-uri 'self'"
+      "base-uri 'self'",
+      "form-action 'self'",
     ].join("; ");
   }
 }
 
 export enum RateDecision {
   Allowed = "allowed",
-  Throttled = "throttled"
+  Throttled = "throttled",
 }
 
 /** Used by the browser's local demo path; the origin has the authoritative limiter. */
 export class RateLimiter {
   private readonly attempts = new Map<string, number[]>();
 
-  constructor(readonly maxAttempts = 8, readonly windowMs = 60_000) {}
+  constructor(
+    readonly maxAttempts = 8,
+    readonly windowMs = 60_000,
+  ) {}
 
   check(clientKey: string, now = Date.now()): RateDecision {
-    const active = (this.attempts.get(clientKey) ?? []).filter((at) => now - at < this.windowMs);
+    const active = (this.attempts.get(clientKey) ?? []).filter(
+      (at) => now - at < this.windowMs,
+    );
     this.attempts.set(clientKey, active);
-    return active.length >= this.maxAttempts ? RateDecision.Throttled : RateDecision.Allowed;
+    return active.length >= this.maxAttempts
+      ? RateDecision.Throttled
+      : RateDecision.Allowed;
   }
 
   record(clientKey: string, now = Date.now()): void {
-    this.attempts.set(clientKey, [...(this.attempts.get(clientKey) ?? []), now]);
+    this.attempts.set(clientKey, [
+      ...(this.attempts.get(clientKey) ?? []),
+      now,
+    ]);
   }
 }

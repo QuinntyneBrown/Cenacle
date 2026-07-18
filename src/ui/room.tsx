@@ -263,7 +263,10 @@ export function RoomPage({
   useEffect(() => {
     if (!reconnecting || !reconnectOverlay.current) return;
     const focus = new FocusManager();
-    focus.trap(reconnectOverlay.current, document.activeElement as HTMLElement | null);
+    focus.trap(
+      reconnectOverlay.current,
+      document.activeElement as HTMLElement | null,
+    );
     const escape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setLeaveOpen(true);
     };
@@ -591,10 +594,14 @@ export function RoomPage({
                       )}
                     </>
                   ) : (
-                    <div className="banner banner--warn">
-                      On-device AI is unavailable. Word features are hidden; the
-                      gathering stays live.
-                    </div>
+                    <>
+                      <div className="banner banner--warn">
+                        On-device AI is unavailable. Scripture, captions, and
+                        reflection are hidden; the gathering and private journal
+                        stay available without a cloud fallback.
+                      </div>
+                      <JournalPanel compact reflectionEnabled={false} />
+                    </>
                   )}
                 </>
               ) : (
@@ -630,21 +637,21 @@ export function RoomPage({
               onClick={toggleCaptions}
             />
           )}
-          {plan.word === WordDecision.Enabled && (
-            <Control
-              icon="word"
-              label={
-                resources.room.role === ParticipantRole.Host
+          <Control
+            icon={plan.word === WordDecision.Enabled ? "word" : "pen"}
+            label={
+              plan.word === WordDecision.Enabled
+                ? resources.room.role === ParticipantRole.Host
                   ? "Surface a passage"
                   : "Follow along in the Word"
-              }
-              accent
-              onClick={() => {
-                setCompanionOpen(true);
-                store.setCompanionOpen(true);
-              }}
-            />
-          )}
+                : "Open private journal"
+            }
+            accent={plan.word === WordDecision.Enabled}
+            onClick={() => {
+              setCompanionOpen(true);
+              store.setCompanionOpen(true);
+            }}
+          />
           <Control
             icon="sparkle"
             label={`Amen · ${reactionCount}`}
@@ -746,13 +753,30 @@ export function RoomPage({
             ref={reconnectOverlay}
           >
             <div className="stack gap-3">
-              <h2 id="reconnect-title">{reconnectFailed ? "Connection lost" : "Reconnecting"}</h2>
-              <p className="reconnect-detail" role="status" aria-live="assertive">
+              <h2 id="reconnect-title">
+                {reconnectFailed ? "Connection lost" : "Reconnecting"}
+              </h2>
+              <p
+                className="reconnect-detail"
+                role="status"
+                aria-live="assertive"
+              >
                 Attempt {reconnectAttempt} of {lifecycle.maxAttempts} · last
                 latency {decoder.latency.readout()}
               </p>
-              <p>{reconnectFailed ? "The live room origin could not be reached. Retry the connection or leave the room." : "Outbound media is paused until the room is stable."}</p>
-              {reconnectFailed && <button className="btn btn--primary" onClick={() => void reconnect()}>Try again</button>}
+              <p>
+                {reconnectFailed
+                  ? "The live room origin could not be reached. Retry the connection or leave the room."
+                  : "Outbound media is paused until the room is stable."}
+              </p>
+              {reconnectFailed && (
+                <button
+                  className="btn btn--primary"
+                  onClick={() => void reconnect()}
+                >
+                  Try again
+                </button>
+              )}
               <button
                 className="btn btn--danger"
                 onClick={() => setLeaveOpen(true)}
@@ -803,7 +827,15 @@ function Control({
   off = false,
   leave = false,
 }: {
-  icon: "mic" | "camera" | "captions" | "word" | "sparkle" | "pip" | "leave";
+  icon:
+    | "mic"
+    | "camera"
+    | "captions"
+    | "word"
+    | "pen"
+    | "sparkle"
+    | "pip"
+    | "leave";
   label: string;
   onClick: () => void;
   accent?: boolean;

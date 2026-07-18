@@ -141,7 +141,10 @@ class WebTransportHandler:
         elif message_type == "webtransport.datagram.send":
             self.connection.send_datagram(stream_id=self.stream_id, data=message["data"])
         elif message_type == "webtransport.stream.send":
-            stream_id = self.connection._quic.get_next_available_stream_id(is_unidirectional=True)
+            stream_id = self.connection.create_webtransport_stream(
+                session_id=self.stream_id,
+                is_unidirectional=True,
+            )
             self.connection._quic.send_stream_data(stream_id, message["data"], end_stream=True)
         self.transmit()
 

@@ -1,5 +1,9 @@
 import type { PresenceUpdate, Reaction, RoomCredential } from "../core/types";
-import { deserializeMediaPacket, serializeMediaPacket, type EncodedMediaPacket } from "./codec";
+import {
+  deserializeMediaPacket,
+  serializeMediaPacket,
+  type EncodedMediaPacket,
+} from "./codec";
 
 export type ControlMessage =
   | { type: "presence"; update: PresenceUpdate }
@@ -21,50 +25,77 @@ export class RoomClock {
   private offsetMs = 0;
   private bestRttMs = Number.POSITIVE_INFINITY;
 
-  observe(clientSentAt: number, serverAt: number, clientReceivedAt: number): void {
+  observe(
+    clientSentAt: number,
+    serverAt: number,
+    clientReceivedAt: number,
+  ): void {
     const rtt = Math.max(0, clientReceivedAt - clientSentAt);
     if (rtt > this.bestRttMs) return;
     this.bestRttMs = rtt;
     this.offsetMs = serverAt - (clientSentAt + clientReceivedAt) / 2;
   }
 
-  now(localNow = Date.now()): number { return localNow + this.offsetMs; }
-  uncertaintyMs(): number | null { return Number.isFinite(this.bestRttMs) ? this.bestRttMs / 2 : null; }
+  now(localNow = Date.now()): number {
+    return localNow + this.offsetMs;
+  }
+  uncertaintyMs(): number | null {
+    return Number.isFinite(this.bestRttMs) ? this.bestRttMs / 2 : null;
+  }
 }
 
 export class RoomTransport {
   private transport: WebTransport | null = null;
   private datagramWriter: WritableStreamDefaultWriter<Uint8Array> | null = null;
-  private readonly listeners: { [K in keyof ListenerMap]: Set<ListenerMap[K]> } = {
+  private readonly listeners: {
+    [K in keyof ListenerMap]: Set<ListenerMap[K]>;
+  } = {
     control: new Set(),
     media: new Set(),
-    drop: new Set()
+    drop: new Set(),
   };
   private outboundPaused = false;
   private closing = false;
   private clockTimer = 0;
+  private latestRoster: Extract<ControlMessage, { type: "roster" }> | null =
+    null;
   readonly clock = new RoomClock();
 
   constructor(readonly origin: string) {}
 
-  async open(credential: RoomCredential, participantId: string, displayName: string, role: string): Promise<void> {
-    if (!window.WebTransport) throw new DOMException("WebTransport is unavailable.", "NotSupportedError");
+  async open(
+    credential: RoomCredential,
+    participantId: string,
+    _displayName: string,
+    _role: string,
+  ): Promise<void> {
+    if (!window.WebTransport)
+      throw new DOMException(
+        "WebTransport is unavailable.",
+        "NotSupportedError",
+      );
     this.closeTransportOnly();
     this.closing = false;
+    this.latestRoster = null;
     const url = new URL("/wt", this.origin);
     url.searchParams.set("code", credential.code);
     url.searchParams.set("token", credential.token);
     url.searchParams.set("participant", participantId);
-    url.searchParams.set("name", displayName);
-    url.searchParams.set("role", role);
-    const options: WebTransportOptions = { allowPooling: false, requireUnreliable: true };
+    const options: WebTransportOptions = {
+      allowPooling: false,
+      requireUnreliable: true,
+    };
     const hash = import.meta.env.VITE_WT_CERT_HASH;
     if (hash) {
       const binary = atob(hash);
-      options.serverCertificateHashes = [{
-        algorithm: "sha-256",
-        value: Uint8Array.from(binary, (character) => character.charCodeAt(0))
-      }];
+      options.serverCertificateHashes = [
+        {
+          algorithm: "sha-256",
+          value: Uint8Array.from(binary, (character) =>
+            character.charCodeAt(0),
+          ),
+        },
+      ];
     }
     this.transport = new window.WebTransport(url.toString(), options);
     await this.transport.ready;
@@ -73,15 +104,31 @@ export class RoomTransport {
     void this.readStreams();
     const opened = this.transport;
     void opened.closed.then(
-      () => { if (!this.closing && this.transport === opened) this.emit("drop", new DOMException("The room connection closed.", "NetworkError")); },
-      (error) => { if (!this.closing && this.transport === opened) this.emit("drop", error); }
+      () => {
+        if (!this.closing && this.transport === opened)
+          this.emit(
+            "drop",
+            new DOMException("The room connection closed.", "NetworkError"),
+          );
+      },
+      (error) => {
+        if (!this.closing && this.transport === opened)
+          this.emit("drop", error);
+      },
     );
     await this.synchronizeClock();
-    this.clockTimer = window.setInterval(() => void this.synchronizeClock(), 30_000);
+    this.clockTimer = window.setInterval(
+      () => void this.synchronizeClock(),
+      30_000,
+    );
   }
 
   async sendDatagram(message: ControlMessage): Promise<void> {
-    if (!this.datagramWriter) throw new DOMException("The room transport is not open.", "InvalidStateError");
+    if (!this.datagramWriter)
+      throw new DOMException(
+        "The room transport is not open.",
+        "InvalidStateError",
+      );
     const bytes = new TextEncoder().encode(JSON.stringify(message));
     await this.datagramWriter.ready;
     await this.datagramWriter.write(bytes);
@@ -104,17 +151,29 @@ export class RoomTransport {
   }
 
   setAudioSending(stream: MediaStream | null, on: boolean): void {
-    stream?.getAudioTracks().forEach((track) => { track.enabled = on; });
+    stream?.getAudioTracks().forEach((track) => {
+      track.enabled = on;
+    });
   }
 
   setVideoSending(stream: MediaStream | null, on: boolean): void {
-    stream?.getVideoTracks().forEach((track) => { track.enabled = on; });
+    stream?.getVideoTracks().forEach((track) => {
+      track.enabled = on;
+    });
   }
 
-  pauseOutbound(): void { this.outboundPaused = true; }
-  resumeOutbound(): void { this.outboundPaused = false; }
-  isConnected(): boolean { return Boolean(this.transport); }
-  roomNow(): number { return this.clock.now(); }
+  pauseOutbound(): void {
+    this.outboundPaused = true;
+  }
+  resumeOutbound(): void {
+    this.outboundPaused = false;
+  }
+  isConnected(): boolean {
+    return Boolean(this.transport);
+  }
+  roomNow(): number {
+    return this.clock.now();
+  }
 
   async synchronizeClock(timeoutMs = 800): Promise<boolean> {
     const clientTime = Date.now();
@@ -130,18 +189,33 @@ export class RoomTransport {
         resolve(result);
       };
       unsubscribe = this.on("control", (message) => {
-        if (message.type !== "pong" || message.clientTime !== clientTime) return;
+        if (message.type !== "pong" || message.clientTime !== clientTime)
+          return;
         this.clock.observe(clientTime, message.serverTime, Date.now());
         finish(true);
       });
       timer = window.setTimeout(() => finish(false), timeoutMs);
-      void this.sendDatagram({ type: "ping", clientTime }).catch(() => finish(false));
+      void this.sendDatagram({ type: "ping", clientTime }).catch(() =>
+        finish(false),
+      );
     });
   }
 
-  on<K extends keyof ListenerMap>(event: K, listener: ListenerMap[K]): () => void {
+  on<K extends keyof ListenerMap>(
+    event: K,
+    listener: ListenerMap[K],
+  ): () => void {
     (this.listeners[event] as Set<ListenerMap[K]>).add(listener);
-    return () => (this.listeners[event] as Set<ListenerMap[K]>).delete(listener);
+    if (event === "control" && this.latestRoster) {
+      const roster = this.latestRoster;
+      queueMicrotask(() => {
+        if (this.listeners.control.has(listener as ListenerMap["control"])) {
+          (listener as ListenerMap["control"])(roster);
+        }
+      });
+    }
+    return () =>
+      (this.listeners[event] as Set<ListenerMap[K]>).delete(listener);
   }
 
   close(code = 0, reason = "left room"): void {
@@ -157,7 +231,10 @@ export class RoomTransport {
         const { done, value } = await reader.read();
         if (done) return;
         try {
-          this.emit("control", JSON.parse(new TextDecoder().decode(value)) as ControlMessage);
+          this.emit(
+            "control",
+            JSON.parse(new TextDecoder().decode(value)) as ControlMessage,
+          );
         } catch {
           // Malformed control messages are dropped rather than reaching UI state.
         }
@@ -171,7 +248,8 @@ export class RoomTransport {
 
   private async readStreams(): Promise<void> {
     if (!this.transport) return;
-    const streamReader = this.transport.incomingUnidirectionalStreams.getReader();
+    const streamReader =
+      this.transport.incomingUnidirectionalStreams.getReader();
     try {
       while (true) {
         const { done, value } = await streamReader.read();
@@ -185,7 +263,9 @@ export class RoomTransport {
     }
   }
 
-  private async consumeStream(stream: ReadableStream<Uint8Array>): Promise<void> {
+  private async consumeStream(
+    stream: ReadableStream<Uint8Array>,
+  ): Promise<void> {
     const reader = stream.getReader();
     const chunks: Uint8Array[] = [];
     let length = 0;
@@ -208,7 +288,13 @@ export class RoomTransport {
     }
   }
 
-  private emit<K extends keyof ListenerMap>(event: K, value: Parameters<ListenerMap[K]>[0]): void {
+  private emit<K extends keyof ListenerMap>(
+    event: K,
+    value: Parameters<ListenerMap[K]>[0],
+  ): void {
+    if (event === "control" && (value as ControlMessage).type === "roster") {
+      this.latestRoster = value as Extract<ControlMessage, { type: "roster" }>;
+    }
     for (const listener of this.listeners[event]) {
       (listener as (item: typeof value) => void)(value);
     }
@@ -217,8 +303,16 @@ export class RoomTransport {
   private closeTransportOnly(code = 0, reason = "replaced connection"): void {
     window.clearInterval(this.clockTimer);
     this.clockTimer = 0;
-    try { this.datagramWriter?.releaseLock(); } catch { /* A pending writer is released by transport close. */ }
-    try { this.transport?.close({ closeCode: code, reason }); } catch { /* Already closed. */ }
+    try {
+      this.datagramWriter?.releaseLock();
+    } catch {
+      /* A pending writer is released by transport close. */
+    }
+    try {
+      this.transport?.close({ closeCode: code, reason });
+    } catch {
+      /* Already closed. */
+    }
     this.transport = null;
     this.datagramWriter = null;
   }

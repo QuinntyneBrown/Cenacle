@@ -1,4 +1,9 @@
-import { DeviceRecoveryResolver, type DegradationPlan, PresenceDecision } from "../core/capabilities";
+import {
+  DeviceRecoveryResolver,
+  type DegradationPlan,
+  PresenceDecision,
+} from "../core/capabilities";
+import { InputSanitizer } from "../core/security";
 import { ConnectionState, ParticipantRole, type Room } from "../core/types";
 import { CodecNegotiator, MediaEncoderPipeline } from "../media/codec";
 import { MediaDeviceService } from "../media/device-service";
@@ -11,24 +16,57 @@ export class GatheringSetup {
     public cameraId = "",
     public microphoneId = "",
     public captionsEnabled = true,
-    public visualsEnabled = true
+    public visualsEnabled = true,
   ) {}
 
-  hasValidName(): boolean { return this.name.trim().length >= 1 && this.name.trim().length <= 60; }
+  normalizedName(): string {
+    return new InputSanitizer().validate(this.name, 60, 1);
+  }
+
+  hasValidName(): boolean {
+    try {
+      this.normalizedName();
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 export class JoinConfig {
-  constructor(public displayName = "", public micEnabled = true, public cameraEnabled = true) {}
-  resolvedName(): string { return this.displayName.trim() || "Guest"; }
+  constructor(
+    public displayName = "",
+    public micEnabled = true,
+    public cameraEnabled = true,
+  ) {}
+  resolvedName(): string {
+    return new InputSanitizer().validate(
+      this.displayName.trim() || "Guest",
+      60,
+      1,
+    );
+  }
 }
 
 export class RoomResolver {
-  constructor(private readonly api: RoomApi, private readonly sanitizer: { parseRoomReference(value: string): string }) {}
-  extractCode(input: string): string { return this.sanitizer.parseRoomReference(input); }
-  isWellFormed(code: string): boolean { return /^[A-HJ-NP-Z2-9]{6}$/.test(code); }
-  async resolve(input: string): Promise<{ code: string; status: "open" | "not-found" }> {
+  constructor(
+    private readonly api: RoomApi,
+    private readonly sanitizer: { parseRoomReference(value: string): string },
+  ) {}
+  extractCode(input: string): string {
+    return this.sanitizer.parseRoomReference(input);
+  }
+  isWellFormed(code: string): boolean {
+    return /^[A-HJ-NP-Z2-9]{6}$/.test(code);
+  }
+  async resolve(
+    input: string,
+  ): Promise<{ code: string; status: "open" | "not-found" }> {
     const code = this.extractCode(input);
-    return { code, status: (await this.api.resolve(code)) ? "open" : "not-found" };
+    return {
+      code,
+      status: (await this.api.resolve(code)) ? "open" : "not-found",
+    };
   }
 }
 
@@ -47,7 +85,7 @@ export class GoLiveController {
     private readonly plan: DegradationPlan,
     private readonly api: RoomApi,
     private readonly devices: MediaDeviceService,
-    private readonly roomOrigin: string
+    private readonly roomOrigin: string,
   ) {}
 
   async goLive(
@@ -55,23 +93,50 @@ export class GoLiveController {
     hostName: string,
     preferredCodec: ConstructorParameters<typeof CodecNegotiator>[0],
     existingStream?: MediaStream,
-    cameraEnabled = true
+    cameraEnabled = true,
   ): Promise<LiveRoomResources> {
     if (this.plan.presence !== PresenceDecision.Live) {
-      throw new DOMException("Live gatherings need WebTransport and WebCodecs.", "NotSupportedError");
+      throw new DOMException(
+        "Live gatherings need WebTransport and WebCodecs.",
+        "NotSupportedError",
+      );
     }
-    if (!setup.hasValidName()) throw new RangeError("Name the gathering with 1–60 characters.");
+    const roomName = setup.normalizedName();
+    const displayName = new InputSanitizer().validate(
+      hostName.trim() || "Host",
+      60,
+      1,
+    );
     const transport = new RoomTransport(this.roomOrigin);
     const ownsStream = !existingStream;
-    const stream = existingStream ?? await this.devices.acquire(setup.cameraId, setup.microphoneId, cameraEnabled, true);
+    const stream =
+      existingStream ??
+      (await this.devices.acquire(
+        setup.cameraId,
+        setup.microphoneId,
+        cameraEnabled,
+        true,
+      ));
     let room: Room | null = null;
     let encoder: MediaEncoderPipeline | null = null;
     try {
-      room = await this.api.create(setup.name.trim(), hostName.trim() || "Host");
-      await transport.open(room.credential, room.participantId, hostName.trim() || "Host", ParticipantRole.Host);
-      encoder = new MediaEncoderPipeline(room.participantId, (packet) => transport.publish(packet), () => transport.roomNow());
-      await encoder.start(stream, await new CodecNegotiator(preferredCodec).negotiate());
-      return { room, displayName: hostName.trim() || "Host", stream, transport, encoder };
+      room = await this.api.create(roomName, displayName);
+      await transport.open(
+        room.credential,
+        room.participantId,
+        displayName,
+        ParticipantRole.Host,
+      );
+      encoder = new MediaEncoderPipeline(
+        room.participantId,
+        (packet) => transport.publish(packet),
+        () => transport.roomNow(),
+      );
+      await encoder.start(
+        stream,
+        await new CodecNegotiator(preferredCodec).negotiate(),
+      );
+      return { room, displayName, stream, transport, encoder };
     } catch (error) {
       encoder?.stop();
       transport.close(1, "go-live failed");
@@ -86,26 +151,51 @@ export class EnterRoomController {
   constructor(
     private readonly api: RoomApi,
     private readonly devices: MediaDeviceService,
-    private readonly roomOrigin: string
+    private readonly roomOrigin: string,
   ) {}
 
   async enter(
     code: string,
     config: JoinConfig,
     preferredCodec: ConstructorParameters<typeof CodecNegotiator>[0],
-    existingStream?: MediaStream
+    existingStream?: MediaStream,
   ): Promise<LiveRoomResources> {
     const transport = new RoomTransport(this.roomOrigin);
     const ownsStream = !existingStream;
-    const stream = existingStream ?? await this.devices.acquire(undefined, undefined, config.cameraEnabled, config.micEnabled);
+    const stream =
+      existingStream ??
+      (await this.devices.acquire(
+        undefined,
+        undefined,
+        config.cameraEnabled,
+        config.micEnabled,
+      ));
     let room: Room | null = null;
     let encoder: MediaEncoderPipeline | null = null;
     try {
       room = await this.api.admit(code, config.resolvedName());
-      await transport.open(room.credential, room.participantId, config.resolvedName(), ParticipantRole.Participant);
-      encoder = new MediaEncoderPipeline(room.participantId, (packet) => transport.publish(packet), () => transport.roomNow());
-      await encoder.start(stream, await new CodecNegotiator(preferredCodec).negotiate());
-      return { room, displayName: config.resolvedName(), stream, transport, encoder };
+      await transport.open(
+        room.credential,
+        room.participantId,
+        config.resolvedName(),
+        ParticipantRole.Participant,
+      );
+      encoder = new MediaEncoderPipeline(
+        room.participantId,
+        (packet) => transport.publish(packet),
+        () => transport.roomNow(),
+      );
+      await encoder.start(
+        stream,
+        await new CodecNegotiator(preferredCodec).negotiate(),
+      );
+      return {
+        room,
+        displayName: config.resolvedName(),
+        stream,
+        transport,
+        encoder,
+      };
     } catch (error) {
       encoder?.stop();
       transport.close(1, "entry failed");
@@ -121,7 +211,10 @@ export class RoomLifecycleController {
   readonly maxAttempts = 5;
   readonly backoffMs = [500, 1_000, 2_000, 4_000, 8_000];
 
-  constructor(readonly resources: LiveRoomResources, private readonly api: RoomApi) {}
+  constructor(
+    readonly resources: LiveRoomResources,
+    private readonly api: RoomApi,
+  ) {}
 
   async confirmLeave(): Promise<void> {
     this.resources.transport.close();
@@ -132,7 +225,11 @@ export class RoomLifecycleController {
   }
 
   async confirmEnd(): Promise<void> {
-    if (this.resources.room.role !== ParticipantRole.Host) throw new DOMException("Only the host can end the gathering.", "NotAllowedError");
+    if (this.resources.room.role !== ParticipantRole.Host)
+      throw new DOMException(
+        "Only the host can end the gathering.",
+        "NotAllowedError",
+      );
     await this.api.end(this.resources.room);
     this.resources.transport.close(1, "gathering ended");
     this.resources.encoder.stop();
@@ -145,13 +242,15 @@ export class RoomLifecycleController {
     this.resources.transport.pauseOutbound();
     for (let attempt = 1; attempt <= this.maxAttempts; attempt += 1) {
       onAttempt(attempt);
-      await new Promise((resolve) => window.setTimeout(resolve, this.backoffMs[attempt - 1]));
+      await new Promise((resolve) =>
+        window.setTimeout(resolve, this.backoffMs[attempt - 1]),
+      );
       try {
         await this.resources.transport.open(
           this.resources.room.credential,
           this.resources.room.participantId,
           this.resources.displayName,
-          this.resources.room.role
+          this.resources.room.role,
         );
         this.resources.transport.resumeOutbound();
         this.state = ConnectionState.Live;

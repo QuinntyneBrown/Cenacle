@@ -21,7 +21,11 @@ import {
 import { AppShell, Icon, LinkButton, PrivacySeal, Toggle } from "./components";
 import { navigate } from "./router";
 
-export function SettingsPage() {
+export function SettingsPage({
+  webGpuAvailable = null,
+}: {
+  webGpuAvailable?: boolean | null;
+}) {
   const devices = useMemo(() => new MediaDeviceService(), []);
   const micTest = useMemo(() => new MicTest(), []);
   const captionRuntime = useMemo(() => new OnDeviceTranscriber(), []);
@@ -36,15 +40,23 @@ export function SettingsPage() {
   const [deviceList, setDeviceList] = useState<DeviceInfo[]>([]);
   const [db, setDb] = useState(-Infinity);
   const [testing, setTesting] = useState(false);
-  const [modelCapability, setModelCapability] = useState<AiCapability | null>(null);
-  const [modelPercent, setModelPercent] = useState(modelDownloadController.progress?.percent ?? 0);
-  const [captionLanguageStatus, setCaptionLanguageStatus] = useState<CaptionLanguageAvailability | null>(null);
+  const [modelCapability, setModelCapability] = useState<AiCapability | null>(
+    null,
+  );
+  const [modelPercent, setModelPercent] = useState(
+    modelDownloadController.progress?.percent ?? 0,
+  );
+  const [captionLanguageStatus, setCaptionLanguageStatus] =
+    useState<CaptionLanguageAvailability | null>(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     void devices.enumerate().then(setDeviceList);
-    const unsubscribeCapability = aiCapabilityStore.subscribe(setModelCapability);
-    const unsubscribeProgress = modelDownloadController.subscribe((progress) => setModelPercent(progress?.percent ?? 0));
+    const unsubscribeCapability =
+      aiCapabilityStore.subscribe(setModelCapability);
+    const unsubscribeProgress = modelDownloadController.subscribe((progress) =>
+      setModelPercent(progress?.percent ?? 0),
+    );
     void modelManager.recheck().then(setModelCapability);
     return () => {
       micTest.stop();
@@ -62,7 +74,11 @@ export function SettingsPage() {
   const installCaptionLanguage = async () => {
     setCaptionLanguageStatus(CaptionLanguageAvailability.Downloading);
     const installed = await captionRuntime.installLanguage();
-    setCaptionLanguageStatus(installed ? CaptionLanguageAvailability.Available : CaptionLanguageAvailability.Unavailable);
+    setCaptionLanguageStatus(
+      installed
+        ? CaptionLanguageAvailability.Available
+        : CaptionLanguageAvailability.Unavailable,
+    );
   };
 
   const list = (kind: MediaDeviceKind) =>
@@ -250,8 +266,18 @@ export function SettingsPage() {
                   ))}
                 </select>
                 <div className="cluster gap-2 mt-3">
-                  <span className="pill">{captionLanguageLabel(captionLanguageStatus)}</span>
-                  {captionLanguageStatus === CaptionLanguageAvailability.Downloadable && <button className="btn btn--ghost btn--sm" onClick={() => void installCaptionLanguage()}>Install local language pack</button>}
+                  <span className="pill">
+                    {captionLanguageLabel(captionLanguageStatus)}
+                  </span>
+                  {captionLanguageStatus ===
+                    CaptionLanguageAvailability.Downloadable && (
+                    <button
+                      className="btn btn--ghost btn--sm"
+                      onClick={() => void installCaptionLanguage()}
+                    >
+                      Install local language pack
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="settings-row mt-5">
@@ -263,28 +289,44 @@ export function SettingsPage() {
                   </p>
                 </div>
                 <div className="cluster gap-2">
-                  <span className="pill pill--sage">{modelStatus(modelCapability, modelPercent)}</span>
-                  {(modelCapability === AiCapability.Downloadable || modelCapability === AiCapability.Downloading) && <LinkButton to="/word/model" className="btn btn--primary btn--sm">{modelCapability === AiCapability.Downloading ? "View progress" : "Download"}</LinkButton>}
+                  <span className="pill pill--sage">
+                    {modelStatus(modelCapability, modelPercent)}
+                  </span>
+                  {(modelCapability === AiCapability.Downloadable ||
+                    modelCapability === AiCapability.Downloading) && (
+                    <LinkButton
+                      to="/word/model"
+                      className="btn btn--primary btn--sm"
+                    >
+                      {modelCapability === AiCapability.Downloading
+                        ? "View progress"
+                        : "Download"}
+                    </LinkButton>
+                  )}
                   <button
                     className="btn btn--ghost btn--sm"
                     onClick={() =>
-                      void modelManager
-                        .recheck()
-                        .then(setModelCapability)
+                      void modelManager.recheck().then(setModelCapability)
                     }
                   >
                     Re-check
                   </button>
-                  {modelCapability === AiCapability.Ready && <button
-                    className="btn btn--quiet btn--sm"
-                    onClick={() => {
-                      void modelManager.remove().then((result) => {
-                        setMessage(result === "removed" ? "The local model was removed. Presence is unchanged." : "This browser requires model removal from its site AI settings. Presence is unchanged.");
-                      });
-                    }}
-                  >
-                    Remove
-                  </button>}
+                  {modelCapability === AiCapability.Ready && (
+                    <button
+                      className="btn btn--quiet btn--sm"
+                      onClick={() => {
+                        void modelManager.remove().then((result) => {
+                          setMessage(
+                            result === "removed"
+                              ? "The local model was removed. Presence is unchanged."
+                              : "This browser requires model removal from its site AI settings. Presence is unchanged.",
+                          );
+                        });
+                      }}
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -297,13 +339,13 @@ export function SettingsPage() {
             <div className="panel__body">
               <div className="settings-row">
                 <div>
-                  <p className="label">Ambient visuals</p>
+                  <p className="label">Ambient visuals (WebGPU)</p>
                   <p className="hint">
                     A GPU-rendered atmosphere behind the room.
                   </p>
                 </div>
                 <Toggle
-                  label="Ambient visuals"
+                  label="Ambient visuals (WebGPU)"
                   checked={draft.ambientVisualsEnabled}
                   onChange={(value) => update("ambientVisualsEnabled", value)}
                 />
@@ -324,6 +366,12 @@ export function SettingsPage() {
               <p className="hint mt-4">
                 Your system reduce-motion setting is always respected.
               </p>
+              {webGpuAvailable === false && (
+                <p className="banner banner--warn mt-4" role="status">
+                  WebGPU is unavailable. A calm still backdrop will be used;
+                  presence and private companion features are unchanged.
+                </p>
+              )}
             </div>
           </section>
           <section className="panel">
@@ -379,16 +427,23 @@ export function SettingsPage() {
 function modelStatus(capability: AiCapability | null, percent: number): string {
   if (!capability) return "Checking…";
   if (capability === AiCapability.Ready) return "Ready · 1.9 GB";
-  if (capability === AiCapability.Downloading) return `Downloading · ${percent}%`;
-  if (capability === AiCapability.Downloadable) return "Available · not downloaded";
+  if (capability === AiCapability.Downloading)
+    return `Downloading · ${percent}%`;
+  if (capability === AiCapability.Downloadable)
+    return "Available · not downloaded";
   return "Unavailable on this device";
 }
 
-function captionLanguageLabel(status: CaptionLanguageAvailability | null): string {
+function captionLanguageLabel(
+  status: CaptionLanguageAvailability | null,
+): string {
   if (!status) return "Checking local language…";
-  if (status === CaptionLanguageAvailability.Available) return "Local language ready";
-  if (status === CaptionLanguageAvailability.Downloadable) return "Local language pack available";
-  if (status === CaptionLanguageAvailability.Downloading) return "Installing local language…";
+  if (status === CaptionLanguageAvailability.Available)
+    return "Local language ready";
+  if (status === CaptionLanguageAvailability.Downloadable)
+    return "Local language pack available";
+  if (status === CaptionLanguageAvailability.Downloading)
+    return "Installing local language…";
   return "Local language unavailable";
 }
 

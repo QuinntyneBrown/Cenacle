@@ -1,184 +1,732 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cenacle — design mocks</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="assets/cenacle.css">
-<style>
-  .swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:var(--sp-3)}
-  .sw{border-radius:var(--r-md);border:1px solid var(--border);overflow:hidden;background:var(--surface)}
-  .sw .chip{height:64px}
-  .sw .meta{padding:.5em .7em;font-size:.72rem}
-  .sw .meta b{display:block;font-weight:600}
-  .sw .meta code{font-family:var(--f-mono);color:var(--muted);font-size:.7rem}
-  .specimen{display:flex;flex-direction:column;gap:.2rem}
-  .type-grid{display:grid;gap:var(--sp-4)}
-  @media(min-width:720px){.type-grid{grid-template-columns:1fr 1fr}}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cenacle — design mocks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="assets/cenacle.css" />
+    <style>
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: var(--sp-3);
+      }
+      .sw {
+        border-radius: var(--r-md);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        background: var(--surface);
+      }
+      .sw .chip {
+        height: 64px;
+      }
+      .sw .meta {
+        padding: 0.5em 0.7em;
+        font-size: 0.72rem;
+      }
+      .sw .meta b {
+        display: block;
+        font-weight: 600;
+      }
+      .sw .meta code {
+        font-family: var(--f-mono);
+        color: var(--muted);
+        font-size: 0.7rem;
+      }
+      .specimen {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+      .type-grid {
+        display: grid;
+        gap: var(--sp-4);
+      }
+      @media (min-width: 720px) {
+        .type-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
 
-  .gallery{display:grid;gap:var(--sp-5);grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
-  .shot{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm);transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),border-color var(--dur) var(--ease)}
-  .shot:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--border-strong)}
-  .shot:focus-visible{outline:2.5px solid var(--accent);outline-offset:3px}
-  .thumb{position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--bg-quiet);border-bottom:1px solid var(--border)}
-  .thumb iframe{position:absolute;top:0;left:0;width:1280px;height:800px;border:0;transform:scale(.3125);transform-origin:top left;pointer-events:none;background:var(--vellum)}
-  .thumb .badge{position:absolute;top:.6rem;right:.6rem;z-index:2}
-  .shot .cap{padding:.85rem 1rem;display:flex;flex-direction:column;gap:.15rem}
-  .shot .cap b{font-weight:600;font-family:var(--f-display);letter-spacing:-.01em}
-  .shot .cap span{font-size:.8rem;color:var(--muted);line-height:1.4}
-  .grouphead{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-5);padding-bottom:var(--sp-3);border-bottom:1px solid var(--hairline)}
-</style>
-</head>
-<body>
+      .gallery {
+        display: grid;
+        gap: var(--sp-5);
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      }
+      .shot {
+        display: flex;
+        flex-direction: column;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition:
+          transform var(--dur) var(--ease),
+          box-shadow var(--dur) var(--ease),
+          border-color var(--dur) var(--ease);
+      }
+      .shot:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-strong);
+      }
+      .shot:focus-visible {
+        outline: 2.5px solid var(--accent);
+        outline-offset: 3px;
+      }
+      .thumb {
+        position: relative;
+        aspect-ratio: 16/10;
+        overflow: hidden;
+        background: var(--bg-quiet);
+        border-bottom: 1px solid var(--border);
+      }
+      .thumb iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1280px;
+        height: 800px;
+        border: 0;
+        transform: scale(0.3125);
+        transform-origin: top left;
+        pointer-events: none;
+        background: var(--vellum);
+      }
+      .thumb .badge {
+        position: absolute;
+        top: 0.6rem;
+        right: 0.6rem;
+        z-index: 2;
+      }
+      .shot .cap {
+        padding: 0.85rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+      }
+      .shot .cap b {
+        font-weight: 600;
+        font-family: var(--f-display);
+        letter-spacing: -0.01em;
+      }
+      .shot .cap span {
+        font-size: 0.8rem;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+      .grouphead {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--sp-3);
+        margin-bottom: var(--sp-5);
+        padding-bottom: var(--sp-3);
+        border-bottom: 1px solid var(--hairline);
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#D2532A" />
+          <stop offset=".55" stop-color="#E4923A" />
+          <stop offset="1" stop-color="#F6CE8B" />
+        </linearGradient>
+      </defs>
+    </svg>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-  <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
-    <stop offset="0" stop-color="#D2532A"/><stop offset=".55" stop-color="#E4923A"/><stop offset="1" stop-color="#F6CE8B"/>
-  </linearGradient>
-</defs></svg>
+    <header class="topbar">
+      <div class="container">
+        <a class="brand" href="index.html">
+          <svg class="flame" viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z"
+              fill="url(#fl)"
+            />
+          </svg>
+          Cenacle <small>design mocks</small>
+        </a>
+        <nav class="hide-sm">
+          <a href="#pages">Pages</a><a href="#dialogs">Dialogs</a
+          ><a href="#states">States</a><a href="#system">System</a>
+        </nav>
+        <a class="btn btn--primary btn--sm" href="landing.html"
+          >Open landing →</a
+        >
+      </div>
+    </header>
 
-<header class="topbar">
-  <div class="container">
-    <a class="brand" href="index.html">
-      <svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg>
-      Cenacle <small>design mocks</small>
-    </a>
-    <nav class="hide-sm">
-      <a href="#pages">Pages</a><a href="#dialogs">Dialogs</a><a href="#states">States</a><a href="#system">System</a>
-    </nav>
-    <a class="btn btn--primary btn--sm" href="landing.html">Open landing →</a>
-  </div>
-</header>
-
-<!-- Intro -->
-<section class="section" style="padding-block:var(--sp-7) var(--sp-6)">
-  <div class="container">
-    <span class="eyebrow">FaithTech-grounded · two registers · one system</span>
-    <h1 class="h1 mt-4" style="max-width:18ch">The upper room, drawn <span class="emph">screen by screen</span>.</h1>
-    <p class="lede mt-4">Every page, dialog, and error state for Cenacle — a browser-native prayer gathering. A light <em>manuscript</em> register for onboarding and utility; a night <em>upper-room</em> register for the live gathering and the private companion. Pentecost flame as the through-line. Click any screen to open it.</p>
-    <div class="cluster gap-3 mt-5">
-      <span class="pill"><span class="count">31</span>&nbsp;screens</span>
-      <span class="pill"><span class="dot dot--ember"></span> Presence · Word · Sanctuary</span>
-      <span class="pill pill--sage"><span class="dot dot--sage"></span> Privacy by architecture</span>
-    </div>
-  </div>
-</section>
-
-<!-- PAGES -->
-<section class="section" id="pages" style="padding-top:var(--sp-4)">
-  <div class="container">
-    <div class="grouphead"><h2 class="h3">Pages</h2><span class="tag">the core screens</span></div>
-    <div class="gallery">
-      <a class="shot" href="landing.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="landing.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Landing</b><span>The thesis — presence + privacy, shown not told</span></div></a>
-      <a class="shot" href="create-room.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="create-room.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Host a room · A1</b><span>Name it, pick devices, go live</span></div></a>
-      <a class="shot" href="lobby.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="lobby.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Green room · A2</b><span>Self-preview before you enter</span></div></a>
-      <a class="shot" href="room-host.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="room-host.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>In the room · host</b><span>Stage, dock, captions, amen, presence</span></div></a>
-      <a class="shot" href="room-participant.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="room-participant.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>In the room · participant</b><span>Join view with live captions</span></div></a>
-      <a class="shot" href="journal.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="journal.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Lament journal · B2</b><span>Write freely — on-device, private</span></div></a>
-      <a class="shot" href="scripture.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="scripture.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Scripture surfacing · B1</b><span>Name a theme, receive a passage</span></div></a>
-      <a class="shot" href="pip.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="pip.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Floating companion · C3</b><span>The room follows you (Document PiP)</span></div></a>
-      <a class="shot" href="settings.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="settings.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Settings</b><span>Devices, captions, sanctuary, privacy</span></div></a>
-    </div>
-  </div>
-</section>
-
-<!-- DIALOGS -->
-<section class="section" id="dialogs" style="padding-top:0">
-  <div class="container">
-    <div class="grouphead"><h2 class="h3">Dialogs</h2><span class="tag">modals over their parent screen</span></div>
-    <div class="gallery">
-      <a class="shot" href="dialog-create-room.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="dialog-create-room.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Create room</b><span>Name & go live</span></div></a>
-      <a class="shot" href="dialog-join-room.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="dialog-join-room.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Join by code</b><span>Six-character room code</span></div></a>
-      <a class="shot" href="dialog-invite.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="dialog-invite.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Invite</b><span>Link, code, QR</span></div></a>
-      <a class="shot" href="dialog-permissions.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="dialog-permissions.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Camera & mic primer</b><span>Why the room needs them</span></div></a>
-      <a class="shot" href="dialog-leave-room.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="dialog-leave-room.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Leave room</b><span>Participant confirm</span></div></a>
-      <a class="shot" href="dialog-end-room.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="dialog-end-room.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>End gathering</b><span>Host confirm</span></div></a>
-      <a class="shot" href="dialog-reflection.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="dialog-reflection.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Reflection · B2</b><span>Gentle, on-device response</span></div></a>
-      <a class="shot" href="dialog-scripture-result.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="dialog-scripture-result.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Passage result · B1</b><span>Surfaced from a local index</span></div></a>
-      <a class="shot" href="dialog-ai-explainer.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="dialog-ai-explainer.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>On-device AI explainer</b><span>How private stays private</span></div></a>
-    </div>
-  </div>
-</section>
-
-<!-- STATES -->
-<section class="section" id="states" style="padding-top:0">
-  <div class="container">
-    <div class="grouphead"><h2 class="h3">States &amp; errors</h2><span class="tag">degrade gracefully — never reroute</span></div>
-    <div class="gallery">
-      <a class="shot" href="error-unsupported-browser.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="error-unsupported-browser.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Unsupported browser</b><span>No WebTransport / WebCodecs</span></div></a>
-      <a class="shot" href="error-ai-unavailable.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="error-ai-unavailable.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>On-device AI unavailable</b><span>Features hidden, not rerouted</span></div></a>
-      <a class="shot" href="state-ai-downloading.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="state-ai-downloading.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Model downloading</b><span>Gemini Nano, one time</span></div></a>
-      <a class="shot" href="error-permission-denied.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="error-permission-denied.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Camera/mic blocked</b><span>How to re-allow</span></div></a>
-      <a class="shot" href="error-device-in-use.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="error-device-in-use.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Camera busy elsewhere</b><span>In use by another app</span></div></a>
-      <a class="shot" href="error-connection-lost.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="error-connection-lost.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Reconnecting</b><span>Dropped connection overlay</span></div></a>
-      <a class="shot" href="error-webgpu-unavailable.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="error-webgpu-unavailable.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>No WebGPU</b><span>Sanctuary falls back to still</span></div></a>
-      <a class="shot" href="error-room-not-found.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="error-room-not-found.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Room not found</b><span>Invalid or expired code</span></div></a>
-      <a class="shot" href="error-room-full.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="error-room-full.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Room full</b><span>Small by design</span></div></a>
-      <a class="shot" href="empty-journal.html"><div class="thumb"><span class="badge"><span class="pill pill--accent">night</span></span><iframe src="empty-journal.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Journal empty</b><span>An invitation to write</span></div></a>
-      <a class="shot" href="empty-scripture.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="empty-scripture.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>No passage matched</b><span>Try plainer words</span></div></a>
-      <a class="shot" href="error-404.html"><div class="thumb"><span class="badge"><span class="pill">light</span></span><iframe src="error-404.html" tabindex="-1" title=""></iframe></div><div class="cap"><b>Not found (404)</b><span>Back to the gathering</span></div></a>
-    </div>
-  </div>
-</section>
-
-<!-- DESIGN SYSTEM -->
-<section class="section" id="system" style="padding-top:0">
-  <div class="container">
-    <div class="grouphead"><h2 class="h3">Design system</h2><span class="tag">assets/cenacle.css</span></div>
-
-    <div class="type-grid mb-6">
-      <div class="card">
-        <span class="tag">Typefaces</span>
-        <div class="specimen mt-4">
-          <span class="display" style="font-size:2.4rem;line-height:1">Bricolage Grotesque</span>
-          <span class="muted small">Display · headlines &amp; big moments</span>
-        </div>
-        <div class="specimen mt-4">
-          <span class="sacred" style="font-size:1.7rem">Fraunces — the Word, in the room</span>
-          <span class="muted small">Serif · Scripture &amp; reflections only</span>
-        </div>
-        <div class="specimen mt-4">
-          <span style="font-size:1.1rem">Inter — the interface voice.</span>
-          <span class="mono" style="font-size:1.05rem">Space Mono · 312 ms · 0 requests · K7QP2M</span>
+    <!-- Intro -->
+    <section class="section" style="padding-block: var(--sp-7) var(--sp-6)">
+      <div class="container">
+        <span class="eyebrow"
+          >FaithTech-grounded · two registers · one system</span
+        >
+        <h1 class="h1 mt-4" style="max-width: 18ch">
+          The upper room, drawn <span class="emph">screen by screen</span>.
+        </h1>
+        <p class="lede mt-4">
+          Every page, dialog, and error state for Cenacle — a browser-native
+          prayer gathering. A light <em>manuscript</em> register for onboarding
+          and utility; a night <em>upper-room</em> register for the live
+          gathering and the private companion. Pentecost flame as the
+          through-line. Click any screen to open it.
+        </p>
+        <div class="cluster gap-3 mt-5">
+          <span class="pill"><span class="count">31</span>&nbsp;screens</span>
+          <span class="pill"
+            ><span class="dot dot--ember"></span> Presence · Word ·
+            Sanctuary</span
+          >
+          <span class="pill pill--sage"
+            ><span class="dot dot--sage"></span> Privacy by architecture</span
+          >
         </div>
       </div>
-      <div class="card">
-        <span class="tag">Components</span>
-        <div class="cluster gap-3 mt-4">
-          <button class="btn btn--primary">Host a room</button>
-          <button class="btn btn--ghost">Join</button>
-          <button class="btn btn--danger">End</button>
+    </section>
+
+    <!-- PAGES -->
+    <section class="section" id="pages" style="padding-top: var(--sp-4)">
+      <div class="container">
+        <div class="grouphead">
+          <h2 class="h3">Pages</h2>
+          <span class="tag">the core screens</span>
         </div>
-        <div class="cluster gap-3 mt-4">
-          <span class="pill"><span class="dot dot--live"></span> Live</span>
-          <span class="pill pill--sage"><span class="dot dot--sage"></span> on-device</span>
-          <span class="pill pill--accent">312&thinsp;ms</span>
+        <div class="gallery">
+          <a class="shot" href="landing.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe src="landing.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap">
+              <b>Landing</b
+              ><span>The thesis — presence + privacy, shown not told</span>
+            </div></a
+          >
+          <a class="shot" href="create-room.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe src="create-room.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap">
+              <b>Host a room · A1</b><span>Name it, pick devices, go live</span>
+            </div></a
+          >
+          <a class="shot" href="lobby.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe src="lobby.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap">
+              <b>Green room · A2</b><span>Self-preview before you enter</span>
+            </div></a
+          >
+          <a class="shot" href="room-host.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe src="room-host.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap">
+              <b>In the room · host</b
+              ><span>Stage, dock, captions, amen, presence</span>
+            </div></a
+          >
+          <a class="shot" href="room-participant.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe
+                src="room-participant.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>In the room · participant</b
+              ><span>Join view with live captions</span>
+            </div></a
+          >
+          <a class="shot" href="journal.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe src="journal.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap">
+              <b>Lament journal · B2</b
+              ><span>Write freely — on-device, private</span>
+            </div></a
+          >
+          <a class="shot" href="scripture.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe src="scripture.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap">
+              <b>Scripture surfacing · B1</b
+              ><span>Name a theme, receive a passage</span>
+            </div></a
+          >
+          <a class="shot" href="pip.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe src="pip.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap">
+              <b>Floating companion · C3</b
+              ><span>The room follows you (Document PiP)</span>
+            </div></a
+          >
+          <a class="shot" href="settings.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe src="settings.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap">
+              <b>Settings</b><span>Devices, captions, sanctuary, privacy</span>
+            </div></a
+          >
         </div>
-        <div class="mt-4"><span class="seal"><span class="seal__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span> <b>On-device</b> — nothing transmitted <span class="mono">· 0 requests</span></span></div>
-        <div class="mt-4"><span class="marquee-word" style="font-family:var(--f-display);font-weight:700;font-size:2rem">Cen<span class="tongue">a</span>cle</span> <span class="muted small">— flame emphasis (echoes FaithTech's underscore)</span></div>
       </div>
-    </div>
+    </section>
 
-    <span class="tag">Palette</span>
-    <div class="swatches mt-3">
-      <div class="sw"><div class="chip" style="background:#0A1420"></div><div class="meta"><b>Upper-room night</b><code>#0A1420</code></div></div>
-      <div class="sw"><div class="chip" style="background:#16273D"></div><div class="meta"><b>FaithTech navy</b><code>#16273D</code></div></div>
-      <div class="sw"><div class="chip" style="background:#F8F5EF"></div><div class="meta"><b>Vellum</b><code>#F8F5EF</code></div></div>
-      <div class="sw"><div class="chip" style="background:linear-gradient(180deg,#E4923A,#D2532A)"></div><div class="meta"><b>Pentecost flame</b><code>#E4923A→#D2532A</code></div></div>
-      <div class="sw"><div class="chip" style="background:#F6CE8B"></div><div class="meta"><b>Candlelight</b><code>#F6CE8B</code></div></div>
-      <div class="sw"><div class="chip" style="background:#5E8B7E"></div><div class="meta"><b>Sage · private</b><code>#5E8B7E</code></div></div>
-    </div>
-  </div>
-</section>
+    <!-- DIALOGS -->
+    <section class="section" id="dialogs" style="padding-top: 0">
+      <div class="container">
+        <div class="grouphead">
+          <h2 class="h3">Dialogs</h2>
+          <span class="tag">modals over their parent screen</span>
+        </div>
+        <div class="gallery">
+          <a class="shot" href="dialog-create-room.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe
+                src="dialog-create-room.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Create room</b><span>Name & go live</span>
+            </div></a
+          >
+          <a class="shot" href="dialog-join-room.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe
+                src="dialog-join-room.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Join by code</b><span>Six-character room code</span>
+            </div></a
+          >
+          <a class="shot" href="dialog-invite.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe src="dialog-invite.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap"><b>Invite</b><span>Link, code, QR</span></div></a
+          >
+          <a class="shot" href="dialog-permissions.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe
+                src="dialog-permissions.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Camera & mic primer</b><span>Why the room needs them</span>
+            </div></a
+          >
+          <a class="shot" href="dialog-leave-room.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe
+                src="dialog-leave-room.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Leave room</b><span>Participant confirm</span>
+            </div></a
+          >
+          <a class="shot" href="dialog-end-room.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe
+                src="dialog-end-room.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>End gathering</b><span>Host confirm</span>
+            </div></a
+          >
+          <a class="shot" href="dialog-reflection.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe
+                src="dialog-reflection.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Reflection · B2</b><span>Gentle, on-device response</span>
+            </div></a
+          >
+          <a class="shot" href="dialog-scripture-result.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe
+                src="dialog-scripture-result.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Passage result · B1</b><span>Surfaced from a local index</span>
+            </div></a
+          >
+          <a class="shot" href="dialog-ai-explainer.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe
+                src="dialog-ai-explainer.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>On-device AI explainer</b
+              ><span>How private stays private</span>
+            </div></a
+          >
+        </div>
+      </div>
+    </section>
 
-<footer class="footer">
-  <div class="container between" style="flex-wrap:wrap;gap:var(--sp-4)">
-    <a class="brand" href="index.html" style="font-size:1rem"><svg class="flame" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z" fill="url(#fl)"/></svg> Cenacle</a>
-    <p class="small muted">Mocks for the Cenacle PRD · presence · privacy · sanctuary</p>
-  </div>
-</footer>
+    <!-- STATES -->
+    <section class="section" id="states" style="padding-top: 0">
+      <div class="container">
+        <div class="grouphead">
+          <h2 class="h3">States &amp; errors</h2>
+          <span class="tag">degrade gracefully — never reroute</span>
+        </div>
+        <div class="gallery">
+          <a class="shot" href="error-unsupported-browser.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe
+                src="error-unsupported-browser.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Unsupported browser</b><span>No WebTransport / WebCodecs</span>
+            </div></a
+          >
+          <a class="shot" href="error-ai-unavailable.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe
+                src="error-ai-unavailable.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>On-device AI unavailable</b
+              ><span>Features hidden, not rerouted</span>
+            </div></a
+          >
+          <a class="shot" href="state-ai-downloading.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe
+                src="state-ai-downloading.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Model downloading</b><span>Gemini Nano, one time</span>
+            </div></a
+          >
+          <a class="shot" href="error-permission-denied.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe
+                src="error-permission-denied.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Camera/mic blocked</b><span>How to re-allow</span>
+            </div></a
+          >
+          <a class="shot" href="error-device-in-use.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe
+                src="error-device-in-use.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Camera busy elsewhere</b><span>In use by another app</span>
+            </div></a
+          >
+          <a class="shot" href="error-connection-lost.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe
+                src="error-connection-lost.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Reconnecting</b><span>Dropped connection overlay</span>
+            </div></a
+          >
+          <a class="shot" href="error-webgpu-unavailable.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe
+                src="error-webgpu-unavailable.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>No WebGPU</b><span>Sanctuary falls back to still</span>
+            </div></a
+          >
+          <a class="shot" href="error-room-not-found.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe
+                src="error-room-not-found.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Room not found</b><span>Invalid or expired code</span>
+            </div></a
+          >
+          <a class="shot" href="error-room-full.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe
+                src="error-room-full.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>Room full</b><span>Small by design</span>
+            </div></a
+          >
+          <a class="shot" href="empty-journal.html"
+            ><div class="thumb">
+              <span class="badge"
+                ><span class="pill pill--accent">night</span></span
+              ><iframe src="empty-journal.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap">
+              <b>Journal empty</b><span>An invitation to write</span>
+            </div></a
+          >
+          <a class="shot" href="empty-scripture.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe
+                src="empty-scripture.html"
+                tabindex="-1"
+                title=""
+              ></iframe>
+            </div>
+            <div class="cap">
+              <b>No passage matched</b><span>Try plainer words</span>
+            </div></a
+          >
+          <a class="shot" href="error-404.html"
+            ><div class="thumb">
+              <span class="badge"><span class="pill">light</span></span
+              ><iframe src="error-404.html" tabindex="-1" title=""></iframe>
+            </div>
+            <div class="cap">
+              <b>Not found (404)</b><span>Back to the gathering</span>
+            </div></a
+          >
+        </div>
+      </div>
+    </section>
 
-</body>
+    <!-- DESIGN SYSTEM -->
+    <section class="section" id="system" style="padding-top: 0">
+      <div class="container">
+        <div class="grouphead">
+          <h2 class="h3">Design system</h2>
+          <span class="tag">assets/cenacle.css</span>
+        </div>
+
+        <div class="type-grid mb-6">
+          <div class="card">
+            <span class="tag">Typefaces</span>
+            <div class="specimen mt-4">
+              <span class="display" style="font-size: 2.4rem; line-height: 1"
+                >Bricolage Grotesque</span
+              >
+              <span class="muted small"
+                >Display · headlines &amp; big moments</span
+              >
+            </div>
+            <div class="specimen mt-4">
+              <span class="sacred" style="font-size: 1.7rem"
+                >Fraunces — the Word, in the room</span
+              >
+              <span class="muted small"
+                >Serif · Scripture &amp; reflections only</span
+              >
+            </div>
+            <div class="specimen mt-4">
+              <span style="font-size: 1.1rem"
+                >Inter — the interface voice.</span
+              >
+              <span class="mono" style="font-size: 1.05rem"
+                >Space Mono · 312 ms · 0 requests · K7QP2M</span
+              >
+            </div>
+          </div>
+          <div class="card">
+            <span class="tag">Components</span>
+            <div class="cluster gap-3 mt-4">
+              <button class="btn btn--primary">Host a room</button>
+              <button class="btn btn--ghost">Join</button>
+              <button class="btn btn--danger">End</button>
+            </div>
+            <div class="cluster gap-3 mt-4">
+              <span class="pill"><span class="dot dot--live"></span> Live</span>
+              <span class="pill pill--sage"
+                ><span class="dot dot--sage"></span> on-device</span
+              >
+              <span class="pill pill--accent">312&thinsp;ms</span>
+            </div>
+            <div class="mt-4">
+              <span class="seal"
+                ><span class="seal__icon"
+                  ><svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3Z"
+                    />
+                    <path d="M9 12l2 2 4-4" /></svg
+                ></span>
+                <b>On-device</b> — nothing transmitted
+                <span class="mono">· 0 requests</span></span
+              >
+            </div>
+            <div class="mt-4">
+              <span
+                class="marquee-word"
+                style="
+                  font-family: var(--f-display);
+                  font-weight: 700;
+                  font-size: 2rem;
+                "
+                >Cen<span class="tongue">a</span>cle</span
+              >
+              <span class="muted small"
+                >— flame emphasis (echoes FaithTech's underscore)</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <span class="tag">Palette</span>
+        <div class="swatches mt-3">
+          <div class="sw">
+            <div class="chip" style="background: #0a1420"></div>
+            <div class="meta"><b>Upper-room night</b><code>#0A1420</code></div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #16273d"></div>
+            <div class="meta"><b>FaithTech navy</b><code>#16273D</code></div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #f8f5ef"></div>
+            <div class="meta"><b>Vellum</b><code>#F8F5EF</code></div>
+          </div>
+          <div class="sw">
+            <div
+              class="chip"
+              style="background: linear-gradient(180deg, #e4923a, #d2532a)"
+            ></div>
+            <div class="meta">
+              <b>Pentecost flame</b><code>#E4923A→#D2532A</code>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #f6ce8b"></div>
+            <div class="meta"><b>Candlelight</b><code>#F6CE8B</code></div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #416d61"></div>
+            <div class="meta"><b>Sage · private</b><code>#416D61</code></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container between" style="flex-wrap: wrap; gap: var(--sp-4)">
+        <a class="brand" href="index.html" style="font-size: 1rem"
+          ><svg class="flame" viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="M16 2c.6 4.2 4.8 6 6.6 9.8 1.9 4 .2 9.6-4.4 11.4-.2-2.2-.9-3.6-2.4-4.8.3 2 .1 3.6-1.1 5.2-3.3-.9-5.7-3.9-5.7-7.6 0-2.2 1-3.9 2.3-5.6.2 1.6.9 2.6 2 3.3C15 15 13.6 9 16 2Z"
+              fill="url(#fl)"
+            />
+          </svg>
+          Cenacle</a
+        >
+        <p class="small muted">
+          Mocks for the Cenacle PRD · presence · privacy · sanctuary
+        </p>
+      </div>
+    </footer>
+  </body>
 </html>

@@ -259,9 +259,13 @@ export default function App() {
       </AppShell>
     );
   else if (path === "/word/scripture") page = gatedWord(<ScripturePage />);
-  else if (path === "/word/journal") page = gatedWord(<JournalPage />);
+  else if (path === "/word/journal")
+    page = (
+      <JournalPage reflectionEnabled={plan.word === WordDecision.Enabled} />
+    );
   else if (path === "/word/model") page = gatedWord(<ScripturePage />);
-  else if (path === "/settings") page = <SettingsPage />;
+  else if (path === "/settings")
+    page = <SettingsPage webGpuAvailable={report?.visualsReady() ?? null} />;
   else if (path === "/support") page = <SupportPage report={report} />;
   else
     page = (

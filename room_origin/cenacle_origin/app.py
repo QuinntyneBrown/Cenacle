@@ -332,8 +332,8 @@ class CenacleApplication:
             (b"referrer-policy", b"no-referrer"),
             (b"permissions-policy", b"camera=(self), microphone=(self), display-capture=()"),
             (b"content-security-policy", (
-                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-                "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; "
+                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+                "font-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; "
                 "connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; "
                 "form-action 'self'; frame-ancestors 'none'"
             ).encode()),
