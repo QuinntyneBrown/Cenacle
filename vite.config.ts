@@ -1,12 +1,16 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, isPreview, mode }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const roomOrigin = env.VITE_ROOM_ORIGIN || "https://localhost:4433";
+  const scriptSource =
+    command === "serve" && !isPreview
+      ? "script-src 'self' 'unsafe-inline'"
+      : "script-src 'self'";
   const csp = [
     "default-src 'self'",
-    "script-src 'self'",
+    scriptSource,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
     "img-src 'self' data: blob:",

@@ -192,7 +192,9 @@ export function ScripturePanel({ compact = false }: { compact?: boolean }) {
 export function ScripturePage() {
   return (
     <AppShell>
-      <ScripturePanel />
+      <main>
+        <ScripturePanel />
+      </main>
     </AppShell>
   );
 }
@@ -417,7 +419,9 @@ export function JournalPage({
 }) {
   return (
     <AppShell night>
-      <JournalPanel reflectionEnabled={reflectionEnabled} />
+      <main>
+        <JournalPanel reflectionEnabled={reflectionEnabled} />
+      </main>
     </AppShell>
   );
 }
